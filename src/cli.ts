@@ -9,7 +9,7 @@ import { VERSION } from './version.js';
 const program = new Command()
     .name('docshark')
     .description('🦈 Documentation MCP Server — scrape, index, and search any doc website')
-    .version(VERSION);
+    .version(VERSION, '-v, --version', 'output the current version');
 
 program
     .command('start', { isDefault: true })
@@ -37,7 +37,7 @@ program
     .description('Add a documentation library and start crawling')
     .option('-n, --name <name>', 'Library name (auto-generated from URL if omitted)')
     .option('-d, --depth <n>', 'Max crawl depth', '3')
-    .option('-v, --lib-version <version>', 'Library version')
+    .option('--lib-version <version>', 'Library version')
     .action(async (url, opts) => {
         db.init();
         try {
