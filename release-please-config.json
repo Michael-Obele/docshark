@@ -1,0 +1,15 @@
+{
+    "packages": {
+        ".": {
+            "release-type": "node",
+            "package-name": "docshark",
+            "bump-minor-pre-major": true,
+            "bump-patch-for-minor-pre-major": true,
+            "changelog-type": "github",
+            "extra-files": [
+                "src/version.ts"
+            ]
+        }
+    },
+    "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}

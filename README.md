@@ -1,55 +1,105 @@
-# docshark
+# 🦈 DocShark
 
-A TMCP (lightweight MCP) server built with:
+**DocShark** is a powerful MCP (Model Context Protocol) server designed to scrape, index, and search any documentation website. It creates a local, highly-searchable knowledge base from public documentation pages using FTS5 (Full-Text Search) and BM25 ranking, allowing AI assistants to query the latest docs effortlessly.
 
-- **Schema Adapter**: @tmcp/adapter-valibot
-- **Transports**: @tmcp/transport-stdio, @tmcp/transport-http, @tmcp/transport-sse
-- **Example**: Included at `src/index.js`
+---
 
-## Development
+## 🚀 Features
+
+- **Automated Crawling**: Discovers pages via `sitemap.xml` with fallback to BFS link crawling.
+- **Smart Extraction**: Uses Readability and Turndown to extract main content and convert it to clean Markdown, filtering out navbars and sidebars.
+- **Semantic Chunking**: Splits content based on headings, preserving contextual headers for better AI understanding.
+- **High-Performance Search**: Built-in SQLite + FTS5 indexing with BM25 ranking for accurate and lightning-fast search results.
+- **JS-Rendered Site Support**: Tiered fetching strategy automatically uses `puppeteer-core` for JavaScript-heavy sites if explicitly configured.
+- **Polite Crawling**: Respects `robots.txt` and implements rate limiting to prevent overloading documentation servers.
+- **Standard MCP Tooling**: Connect perfectly with Desktop Claude, VS Code, Cursor, and any other MCP-compatible clients via standard `stdio` or `http`/`sse` transports.
+
+## 📦 What We Have Done (Phase 1)
+
+**Phase 1: Core Engine** is fully implemented and tested.
+- ✅ Custom SQLite Database with FTS5 virtual tables and auto-sync triggers.
+- ✅ Web scraping engine supporting standard `fetch()` and `puppeteer-core`.
+- ✅ Markdown processor utilizing Readability + Turndown.
+- ✅ Heading-based semantic chunker (500-1200 tokens per chunk).
+- ✅ Asynchronous job manager and queue system.
+- ✅ Complete HTTP API (REST endpoints + SSE event streams).
+- ✅ Seamless integration of 6 MCP tools: `add_library`, `search_docs`, `list_libraries`, `get_doc_page`, `refresh_library`, and `remove_library`.
+- ✅ Robust CLI interface (`start`, `add`, `search`, `list`).
+
+## 🏗️ What We Are Doing
+
+We are actively polishing the integration between the core engine and external MCP clients (like VS Code Agents and Claude Desktop).
+
+## 🔮 What We Plan To Do (Phase 2 & Beyond)
+
+- **Web Dashboard**: An intuitive SvelteKit dashboard to manage your synced libraries, view crawl progress in real-time (via SSE), and test searches manually.
+- **Incremental Crawling**: Smarter `refresh` jobs that compare `ETag` and `Last-Modified` headers to only re-scrape updated pages.
+- **Vector Search (RAG)**: Integration of lightweight vector embeddings for semantic similarity search alongside the existing FTS5 keyword search.
+- **Advanced Scraping Setup**: Support for custom CSS selectors to define exactly where content lives in non-standard documentation websites.
+
+---
+
+## 🛠️ Usage
+
+### Installing & Running Locally
+
+Ensure you have [Bun](https://bun.sh/) installed.
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
-# Start the server
-pnpm run start
-
-# Start with file watching
-pnpm run dev
+# Start the DocShark MCP server in HTTP mode
+bun run src/cli.ts start --port 6380
 ```
 
-## Usage
-
-This server provides the following capabilities:
-
-### Tools
-
-- `hello` - A simple greeting tool
-
-### Example Server
-
-Run the example server:
+### Important CLI Commands
 
 ```bash
-node src/index.js
+# Add a documentation library to the index
+bun run src/cli.ts add https://valibot.dev/guides/ --depth 2
+
+# Search your indexed docs
+bun run src/cli.ts search "schema validation"
+
+# List all crawled libraries
+bun run src/cli.ts list
 ```
 
-The example demonstrates:
-- Schema validation with @tmcp/adapter-valibot
-- STDIO transport for MCP communication
+### Using in VS Code (Copilot Agent Mode)
 
+To use DocShark as an MCP server in VS Code:
+1. Enable MCP discovery in your VS Code settings.
+2. Create `.vscode/mcp.json` in your workspace:
+```json
+{
+  "servers": {
+    "docshark": {
+      "type": "stdio",
+      "command": "bun",
+      "args": [
+        "run",
+        "/absolute/path/to/docshark/src/cli.ts",
+        "start",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+3. Restart the server in VS Code properties, and your Copilot agent will now have access to the docshark tools.
 
+---
 
-## Architecture
+## 🔄 Versioning & Changelog
 
-This server uses the TMCP (lightweight MCP) architecture:
+This project uses [Google's Release Please](https://github.com/googleapis/release-please) to automate versioning and changelog generation.
+- **Semantic Versioning**: Our versions automatically bump (e.g. `0.0.1` -> `0.0.2` or `0.1.0`) based on standard Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
+- **Automated**: A PR is automatically created on `main` when standard commits are merged, generating a standard `CHANGELOG.md`.
 
-- **McpServer**: Core server implementation
-- **Schema Adapter**: Validates input using @tmcp/adapter-valibot
-- **Transports**: Communication layers (@tmcp/transport-stdio, @tmcp/transport-http, @tmcp/transport-sse)
+## 📜 License
 
-## Learn More
+This project is open-source and available under the [MIT License](LICENSE).
 
-- [TMCP Documentation](https://github.com/paoloricciuti/tmcp)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
+---
+*Built to empower AI agents with the latest knowledge.*
