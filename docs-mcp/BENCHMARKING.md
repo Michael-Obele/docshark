@@ -8,7 +8,10 @@ This document outlines the **Who**, **Why**, **What**, and **How** of benchmarki
 To prove DocShark's value, we should compare it against the current industry standards for documentation scraping and indexing:
 - [Firecrawl](https://www.firecrawl.dev/) (Leading proprietary LLM scraper)
 - [Crawl4AI](https://github.com/unclecode/crawl4ai) (Leading open-source LLM crawler)
-- Existing basic MCP web search tools (like Exa or Brave MCP servers)
+
+We must also directly benchmark against our direct **design inspirations**:
+- [Grounded Docs (arabold/docs-mcp-server)](https://github.com/arabold/docs-mcp-server) - The main architectural inspiration for DocShark. We need to prove our SQLite/FTS5 approach is faster than their LangChain embeddings.
+- [Context7](https://context7.com/) - They index raw GitHub source repos, not rendered HTML doc sites. We need to measure the quality gap in context payload between raw source code and our rendered markdown pipeline.
 
 ## 🎯 Why Benchmark?
 1. **To prove latency benefits**: DocShark uses a local SQLite + FTS5 database, meaning search results return in `<50ms` compared to cloud-based solutions taking `1000ms+`.
