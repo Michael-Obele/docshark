@@ -2,12 +2,16 @@
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
 import TurndownService from 'turndown';
+import { gfm } from 'turndown-plugin-gfm';
 
 const turndown = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
     bulletListMarker: '-',
 });
+
+turndown.use(gfm);
+turndown.keep(['details', 'summary', 'kbd']);
 
 // Preserve language attribute on code blocks
 turndown.addRule('fencedCodeBlock', {
