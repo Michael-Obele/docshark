@@ -1,5 +1,10 @@
 # 🦈 DocShark
 
+[![Built with Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh/)
+[![MCP Compatible](https://img.shields.io/badge/MCP-Ready-0D1117.svg?style=flat&logo=github&logoColor=white)](https://modelcontextprotocol.io/)
+[![GitHub Release](https://img.shields.io/github/v/release/Michael-Obele/docshark?color=success)](https://github.com/Michael-Obele/docshark/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **DocShark** is a powerful MCP (Model Context Protocol) server designed to scrape, index, and search any documentation website. It creates a local, highly-searchable knowledge base from public documentation pages using FTS5 (Full-Text Search) and BM25 ranking, allowing AI assistants to query the latest docs effortlessly.
 
 ---
