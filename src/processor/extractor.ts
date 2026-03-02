@@ -43,6 +43,40 @@ export function extractAndConvert(
         }
     }
 
+    // PRE-PROCESS: Rescue code blocks from aggressive Readability stripping
+    // Many doc sites wrap <pre> blocks in complex UI (like <figure>) that Readability deletes.
+    const pres = Array.from(document.querySelectorAll('pre'));
+    for (const pre of pres) {
+        const codeText = pre.textContent || '';
+        if (!codeText) continue;
+
+        const lang =
+            pre.getAttribute('data-language') ||
+            pre.className?.match(/language-(\w+)/)?.[1] ||
+            pre.querySelector('code')?.getAttribute('data-language') ||
+            pre.querySelector('code')?.className?.match(/language-(\w+)/)?.[1] ||
+            '';
+
+        let wrapper: any = pre;
+
+        // Walk up to find the container that exclusively holds this code block
+        while (
+            wrapper.parentElement &&
+            !['BODY', 'MAIN', 'ARTICLE', 'SECTION'].includes(wrapper.parentElement.tagName.toUpperCase()) &&
+            wrapper.parentElement.textContent?.trim() === pre.textContent?.trim()
+        ) {
+            wrapper = wrapper.parentElement;
+        }
+
+        const cleanPre = document.createElement('pre');
+        const cleanCode = document.createElement('code');
+        if (lang) cleanCode.className = `language-${lang}`;
+        cleanCode.textContent = codeText;
+        cleanPre.appendChild(cleanCode);
+
+        wrapper.replaceWith(cleanPre as unknown as Node);
+    }
+
     const reader = new Readability(document as any, { charThreshold: 100 });
     const article = reader.parse();
 
