@@ -15,7 +15,7 @@
 - **Smart Extraction**: Uses Readability and Turndown to extract main content and convert it to clean Markdown, filtering out navbars and sidebars.
 - **Semantic Chunking**: Splits content based on headings, preserving contextual headers for better AI understanding.
 - **High-Performance Search**: Built-in SQLite + FTS5 indexing with BM25 ranking for accurate and lightning-fast search results.
-- **JS-Rendered Site Support**: Tiered fetching strategy automatically uses `puppeteer-core` for JavaScript-heavy sites if explicitly configured.
+- **JS-Rendered Site Support**: Tiered fetching strategy automatically detects React/Vue SPAs (empty shells) and upgrades to `puppeteer-core` if you have it installed (zero-config, auto-fallback).
 - **Polite Crawling**: Respects `robots.txt` and implements rate limiting to prevent overloading documentation servers.
 - **Standard MCP Tooling**: Connect perfectly with Desktop Claude, VS Code, Cursor, and any other MCP-compatible clients via standard `stdio` or `http`/`sse` transports.
 
@@ -53,6 +53,9 @@ Ensure you have [Bun](https://bun.sh/) installed.
 ```bash
 # Install dependencies
 bun install
+
+# (Optional) Enable auto-detection & scraping of Javascript React/Vue single-page apps
+bun add puppeteer-core
 
 # Start the DocShark MCP server in HTTP mode
 bun run src/cli.ts start --port 6380
