@@ -95,7 +95,7 @@ To use DocShark as an MCP server in VS Code:
 
 This project uses [Google's Release Please](https://github.com/googleapis/release-please) to automate versioning and changelog generation.
 - **Semantic Versioning**: Our versions automatically bump (e.g. `0.0.1` -> `0.0.2` or `0.1.0`) based on standard Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
-- **Automated**: A PR is automatically created on `main` when standard commits are merged, generating a standard `CHANGELOG.md`.
+- **Automated**: A PR is automatically created on `master` when standard commits are merged, generating a standard `CHANGELOG.md`.
 
 ## 📜 License
 
