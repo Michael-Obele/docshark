@@ -193,8 +193,8 @@ export class Database {
         contentMarkdown: string;
         contentHash: string;
         headings: object[];
-    }) {
-        return this.db
+    }): string {
+        this.db
             .prepare(
                 `INSERT INTO pages (id, library_id, url, path, title, content_markdown, content_hash, headings)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -215,6 +215,9 @@ export class Database {
                 page.contentHash,
                 JSON.stringify(page.headings),
             );
+
+        const row = this.db.prepare('SELECT id FROM pages WHERE library_id = ? AND url = ?').get(page.libraryId, page.url) as { id: string };
+        return row.id;
     }
 
     getPage(opts: { url?: string; library?: string; path?: string }): Page | undefined {

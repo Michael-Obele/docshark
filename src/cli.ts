@@ -108,6 +108,58 @@ program
         );
     });
 
+program
+    .command('refresh <name>')
+    .description('Refresh an existing documentation library')
+    .action(async (name) => {
+        db.init();
+        try {
+            const lib = db.getLibraryByName(name);
+            if (!lib) throw new Error(`Library "${name}" not found.`);
+            const { jobManager } = await import('./server.js');
+            const job = jobManager.startCrawl(lib.id, { incremental: true });
+
+            console.log(`\n🔄 Refreshing "${lib.display_name}" — crawling ${lib.url}...`);
+            console.log(`   Job ID: ${job.id}`);
+            await waitForCrawl(job.id);
+        } catch (err: any) {
+            console.error(`\n❌ ${err.message}\n`);
+            process.exit(1);
+        }
+    });
+
+program
+    .command('remove <name>')
+    .description('Remove a documentation library and its index')
+    .action((name) => {
+        db.init();
+        try {
+            const lib = db.getLibraryByName(name);
+            if (!lib) throw new Error(`Library "${name}" not found.`);
+            db.removeLibrary(lib.id);
+            console.log(`\n🗑️ Removed library "${lib.display_name}". Deleted ${lib.page_count} pages.\n`);
+        } catch (err: any) {
+            console.error(`\n❌ ${err.message}\n`);
+            process.exit(1);
+        }
+    });
+
+program
+    .command('get <url>')
+    .description('Get the full markdown content of a specific indexed page')
+    .action((url) => {
+        db.init();
+        const page = db.getPage({ url });
+        if (!page) {
+            console.error(`\n❌ Page not found in index: ${url}\n`);
+            process.exit(1);
+        }
+        console.log(`\n--- ${page.title} ---`);
+        console.log(`Source: ${page.url}\n\n`);
+        console.log(page.content_markdown);
+        console.log('\n');
+    });
+
 program.parse();
 
 /** Helper to wait for a crawl job to finish (CLI blocking mode) */

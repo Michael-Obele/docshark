@@ -61,10 +61,9 @@ export class CrawlWorker {
                     const contentHash = createHash('sha256').update(markdown).digest('hex');
 
                     // Store page
-                    const pageId = nanoid();
                     const path = new URL(url).pathname;
-                    this.db.upsertPage({
-                        id: pageId,
+                    const pageId = this.db.upsertPage({
+                        id: nanoid(),
                         libraryId,
                         url,
                         path,
