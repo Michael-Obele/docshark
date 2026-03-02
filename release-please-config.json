@@ -6,6 +6,7 @@
             "bump-minor-pre-major": true,
             "bump-patch-for-minor-pre-major": true,
             "changelog-type": "github",
+            "include-component-in-tag": false,
             "extra-files": [
                 "src/version.ts"
             ]
