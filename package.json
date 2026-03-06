@@ -1,48 +1,65 @@
 {
-	"name": "docshark",
-	"version": "0.1.5",
-	"description": "🦈 Documentation MCP Server — scrape, index, and search any doc website",
-	"type": "module",
-	"bin": {
-		"docshark": "./src/cli.ts"
-	},
-	"scripts": {
-		"start": "bun run src/cli.ts start",
-		"dev": "bun run --watch src/cli.ts start",
-		"cli": "bun run src/cli.ts",
-		"check": "tsc --noEmit",
-		"test:crawl": "bun run src/cli.ts add https://svelte.dev/docs/svelte/overview"
-	},
-	"keywords": [
-		"tmcp",
-		"mcp",
-		"documentation",
-		"search",
-		"ai",
-		"scraper"
-	],
-	"dependencies": {
-		"@mozilla/readability": "^0.6.0",
-		"@tmcp/adapter-valibot": "^0.1.5",
-		"@tmcp/transport-http": "^0.8.4",
-		"@tmcp/transport-sse": "^0.5.3",
-		"@tmcp/transport-stdio": "^0.4.1",
-		"cheerio": "^1.2.0",
-		"commander": "^14.0.3",
-		"linkedom": "^0.18.12",
-		"nanoid": "^5.1.6",
-		"puppeteer-core": "^24.37.5",
-		"robots-parser": "^3.0.1",
-		"srvx": "^0.11.8",
-		"tmcp": "^1.19.2",
-		"turndown": "^7.2.2",
-		"turndown-plugin-gfm": "^1.0.2",
-		"valibot": "^1.2.0"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.3.9",
-		"@types/node": "^25.3.3",
-		"@types/turndown": "^5.0.6",
-		"typescript": "^5.9.3"
-	}
+  "name": "docshark",
+  "version": "0.1.5",
+  "description": "🦈 Documentation MCP Server — scrape, index, and search any doc website",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "docshark": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "start": "bun run src/cli.ts start",
+    "dev": "bun run --watch src/cli.ts start",
+    "cli": "bun run src/cli.ts",
+    "check": "tsc --noEmit",
+    "build": "rm -rf dist && bun build ./src/cli.ts ./src/index.ts --outdir ./dist --target node --external '*' && tsc --emitDeclarationOnly",
+    "prepublishOnly": "bun run build",
+    "test:crawl": "bun run src/cli.ts add https://svelte.dev/docs/svelte/overview"
+  },
+  "keywords": [
+    "tmcp",
+    "mcp",
+    "documentation",
+    "search",
+    "ai",
+    "scraper"
+  ],
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "@tmcp/adapter-valibot": "^0.1.5",
+    "@tmcp/transport-http": "^0.8.4",
+    "@tmcp/transport-sse": "^0.5.3",
+    "@tmcp/transport-stdio": "^0.4.1",
+    "cheerio": "^1.2.0",
+    "commander": "^14.0.3",
+    "linkedom": "^0.18.12",
+    "nanoid": "^5.1.6",
+    "puppeteer-core": "^24.37.5",
+    "robots-parser": "^3.0.1",
+    "srvx": "^0.11.8",
+    "tmcp": "^1.19.2",
+    "turndown": "^7.2.2",
+    "turndown-plugin-gfm": "^1.0.2",
+    "valibot": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9",
+    "@types/node": "^25.3.3",
+    "@types/turndown": "^5.0.6",
+    "typescript": "^5.9.3"
+  }
 }
