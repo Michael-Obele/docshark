@@ -49,14 +49,14 @@ We are actively polishing the integration between the core engine and external M
 
 ### Quick Start (from npm)
 
-You can run DocShark directly without installing it globally using `npx`:
+You can run DocShark directly without installing it globally using `bunx`:
 
 ```bash
 # Add a documentation library to the index
-npx docshark add https://valibot.dev/guides/ --depth 2
+bunx docshark add https://valibot.dev/guides/ --depth 2
 
 # Search your indexed docs
-npx docshark search "schema validation"
+bunx docshark search "schema validation"
 ```
 
 ### Installation
@@ -87,7 +87,7 @@ Add DocShark to your `.vscode/settings.json` or global MCP configuration:
 {
   "mcpServers": {
     "docshark": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "docshark", "start", "--stdio"]
     }
   }
@@ -100,7 +100,7 @@ Add DocShark to your `.vscode/settings.json` or global MCP configuration:
 2. Click **+ Add New MCP Server**.
 3. Name: `docshark`
 4. Type: `command`
-5. Command: `npx -y docshark start --stdio`
+5. Command: `bunx -y docshark start --stdio`
 
 ### Claude Desktop
 
@@ -113,7 +113,7 @@ Edit your Claude Desktop configuration file:
 {
   "mcpServers": {
     "docshark": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "docshark", "start", "--stdio"]
     }
   }

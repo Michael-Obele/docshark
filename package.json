@@ -26,9 +26,13 @@
     "dev": "bun run --watch src/cli.ts start",
     "cli": "bun run src/cli.ts",
     "check": "tsc --noEmit",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && chmod +x dist/cli.js",
     "prepublishOnly": "bun run build",
     "test:crawl": "bun run src/cli.ts add https://svelte.dev/docs/svelte/overview"
+  },
+  "engines": {
+    "node": ">=20",
+    "bun": ">=1.1.0"
   },
   "keywords": [
     "tmcp",

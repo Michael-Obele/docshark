@@ -8,7 +8,7 @@ DocShark is now available on npm and can be used as an MCP server across various
 # Global install (optional)
 npm install -g docshark
 # or run on the fly
-npx docshark [command]
+bunx docshark [command]
 ```
 
 ## IDE & Desktop Integrations
@@ -22,7 +22,7 @@ Edit your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "docshark": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "docshark", "start", "--stdio"]
     }
   }
@@ -33,7 +33,7 @@ Edit your `claude_desktop_config.json`:
 - Go to `Settings > Models > MCP`.
 - Add a command-based server:
   - Name: `docshark`
-  - Command: `npx -y docshark start --stdio`
+  - Command: `bunx -y docshark start --stdio`
 
 ### 3. VS Code (Copilot / Desktop Extension)
 Open your workspace settings (or `.vscode/settings.json`):
@@ -42,7 +42,7 @@ Open your workspace settings (or `.vscode/settings.json`):
 {
   "mcpServers": {
     "docshark": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "docshark", "start", "--stdio"]
     }
   }
