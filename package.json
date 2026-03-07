@@ -26,7 +26,7 @@
     "dev": "bun run --watch src/cli.ts start",
     "cli": "bun run src/cli.ts",
     "check": "tsc --noEmit",
-    "build": "rm -rf dist && bun build ./src/cli.ts ./src/index.ts --outdir ./dist --target node --external '*' && tsc --emitDeclarationOnly",
+    "build": "rm -rf dist && tsc",
     "prepublishOnly": "bun run build",
     "test:crawl": "bun run src/cli.ts add https://svelte.dev/docs/svelte/overview"
   },
