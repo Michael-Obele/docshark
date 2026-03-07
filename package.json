@@ -1,6 +1,6 @@
 {
   "name": "docshark",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "🦈 Documentation MCP Server — scrape, index, and search any doc website",
   "type": "module",
   "main": "./dist/index.js",
