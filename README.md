@@ -22,6 +22,7 @@
 ## 📦 What We Have Done (Phase 1)
 
 **Phase 1: Core Engine** is fully implemented and tested.
+
 - ✅ Custom SQLite Database with FTS5 virtual tables and auto-sync triggers.
 - ✅ Web scraping engine supporting standard `fetch()` and `puppeteer-core`.
 - ✅ Markdown processor utilizing Readability + Turndown.
@@ -46,62 +47,113 @@ We are actively polishing the integration between the core engine and external M
 
 ## 🛠️ Usage
 
-### Installing & Running Locally
+### Quick Start (from npm)
+
+You can run DocShark directly without installing it globally using `npx`:
+
+```bash
+# Add a documentation library to the index
+npx docshark add https://valibot.dev/guides/ --depth 2
+
+# Search your indexed docs
+npx docshark search "schema validation"
+```
+
+### Installation
+
+To install DocShark globally as a CLI tool:
+
+```bash
+# Using npm
+npm install -g docshark
+
+# Using Bun
+bun add -g docshark
+```
+
+After installation, you can use the `docshark` command:
+
+```bash
+docshark list
+```
+
+## 🔌 MCP Integration
+
+### VS Code (GitHub Copilot / MCP Extension)
+
+Add DocShark to your `.vscode/settings.json` or global MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "docshark": {
+      "command": "npx",
+      "args": ["-y", "docshark", "start", "--stdio"]
+    }
+  }
+}
+```
+
+### Cursor
+
+1. Open **Cursor Settings** > **Models** > **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Name: `docshark`
+4. Type: `command`
+5. Command: `npx -y docshark start --stdio`
+
+### Claude Desktop
+
+Edit your Claude Desktop configuration file:
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "docshark": {
+      "command": "npx",
+      "args": ["-y", "docshark", "start", "--stdio"]
+    }
+  }
+}
+```
+
+---
+
+## 🛠️ Development
+
+### Local Setup
 
 Ensure you have [Bun](https://bun.sh/) installed.
 
 ```bash
+# Clone the repository
+git clone https://github.com/Michael-Obele/docshark.git
+cd docshark
+
 # Install dependencies
 bun install
 
 # (Optional) Enable auto-detection & scraping of Javascript React/Vue single-page apps
 bun add puppeteer-core
 
-# Start the DocShark MCP server in HTTP mode
+# Start the DocShark MCP server in HTTP mode for local testing
 bun run src/cli.ts start --port 6380
 ```
 
-### Important CLI Commands
+### Local CLI Debugging
 
 ```bash
-# Add a documentation library to the index
-bun run src/cli.ts add https://valibot.dev/guides/ --depth 2
-
-# Search your indexed docs
-bun run src/cli.ts search "schema validation"
-
-# List all crawled libraries
+# Run CLI directly while developing
 bun run src/cli.ts list
 ```
-
-### Using in VS Code (Copilot Agent Mode)
-
-To use DocShark as an MCP server in VS Code:
-1. Enable MCP discovery in your VS Code settings.
-2. Create `.vscode/mcp.json` in your workspace:
-```json
-{
-  "servers": {
-    "docshark": {
-      "type": "stdio",
-      "command": "bun",
-      "args": [
-        "run",
-        "/absolute/path/to/docshark/src/cli.ts",
-        "start",
-        "--stdio"
-      ]
-    }
-  }
-}
-```
-3. Restart the server in VS Code properties, and your Copilot agent will now have access to the docshark tools.
-
----
 
 ## 🔄 Versioning & Changelog
 
 This project uses [Google's Release Please](https://github.com/googleapis/release-please) to automate versioning and changelog generation.
+
 - **Semantic Versioning**: Our versions automatically bump (e.g. `0.0.1` -> `0.0.2` or `0.1.0`) based on standard Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
 - **Automated**: A PR is automatically created on `master` when standard commits are merged, generating a standard `CHANGELOG.md`.
 
@@ -110,4 +162,5 @@ This project uses [Google's Release Please](https://github.com/googleapis/releas
 This project is open-source and available under the [MIT License](LICENSE).
 
 ---
-*Built to empower AI agents with the latest knowledge.*
+
+_Built to empower AI agents with the latest knowledge._

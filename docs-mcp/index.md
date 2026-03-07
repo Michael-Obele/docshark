@@ -156,3 +156,13 @@ Vector embeddings, Playwright adapter, auto-detect deps, diff-aware crawling.
 | [Tasks & Milestones](./todos.md)                    | Phased task breakdown                                |
 
 Back to repository root: [../..](../../)
+
+## Project Documentation
+
+*   **[Implementation Guide](./implementation-guide.md)** — Architectural plan and implementation details.
+*   **[Installation & Setup](./mcp-setup.md)** — How to use DocShark in your favorite AI client.
+*   **[Publishing Guide](./PUBLISHING.md)** — How to bundle and publish the npm package.
+*   **[Project Structure](./project-structure.md)** — Core folder layout and distribution options.
+*   **[Database Schema](./database-schema.md)** — SQLite tables and search indexing logic.
+*   **[Scraping Pipeline](./scraping-pipeline.md)** — The multi-tier discovery and extraction flow.
+*   **[Tools Specification](./tools-spec.md)** — Detailed definitions of the 6 MCP tools.
