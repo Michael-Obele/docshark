@@ -21,6 +21,16 @@
     "LICENSE",
     "CHANGELOG.md"
   ],
+  "author": "Michael Obele",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Michael-Obele/docshark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Michael-Obele/docshark/issues"
+  },
+  "homepage": "https://github.com/Michael-Obele/docshark#readme",
   "scripts": {
     "start": "bun run src/cli.ts start",
     "dev": "bun run --watch src/cli.ts start",
