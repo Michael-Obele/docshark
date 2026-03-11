@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/Michael-Obele/docshark/compare/v0.1.10...v0.1.11) (2026-03-11)
+
+
+### ✨ Features
+
+* Directly process raw Markdown and plain text files by checking content type and URL extension. ([a4d66b8](https://github.com/Michael-Obele/docshark/commit/a4d66b8cdd6342645b3cab292ef82c133c9ae52c))
+
 ## [0.1.10](https://github.com/Michael-Obele/docshark/compare/v0.1.9...v0.1.10) (2026-03-11)
 
 
