@@ -196,3 +196,44 @@ server.tool(
         return tool.text(`🗑️ Library "${lib.display_name}" removed.\nDeleted ${lib.page_count} pages and ${lib.chunk_count} chunks.`);
     },
 );
+
+// ──────────────────────────────────────
+// Tool 7: library_info — detailed stats and pages
+// ──────────────────────────────────────
+server.tool(
+    {
+        name: 'library_info',
+        description:
+            'Get detailed information about a specific documentation library, including a list of all its indexed pages and their paths. ' +
+            'Use this to see what pages are available in a library before retrieving them.',
+        schema: v.object({
+            library: v.pipe(v.string(), v.description('The library name to get information for.')),
+        }),
+    },
+    async ({ library }) => {
+        const lib = db.getLibraryByName(library);
+        if (!lib) return tool.text(`Library "${library}" not found. Use list_libraries to see available libraries.`);
+        const pages = db.getPagesByLibrary(lib.id);
+
+        let output = `## Library: ${lib.display_name} (${lib.name})\n`;
+        output += `- **URL:** ${lib.url}\n`;
+        output += `- **Status:** ${lib.status}\n`;
+        output += `- **Pages:** ${lib.page_count}\n`;
+        output += `- **Chunks:** ${lib.chunk_count}\n`;
+        output += `- **Last Crawled:** ${lib.last_crawled_at || 'never'}\n\n`;
+
+        if (pages.length > 0) {
+            output += `### Pages (${pages.length})\n\n`;
+            output += '| Title | Path | URL |\n';
+            output += '| ----- | ---- | --- |\n';
+            for (const p of pages) {
+                const title = p.title?.replace(/\|/g, '-') || 'Untitled';
+                output += `| ${title} | \`${p.path}\` | ${p.url} |\n`;
+            }
+        } else {
+            output += `*No pages indexed yet for this library.*\n`;
+        }
+
+        return tool.text(output);
+    },
+);
