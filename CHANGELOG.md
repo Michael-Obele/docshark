@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/Michael-Obele/docshark/compare/v0.1.9...v0.1.10) (2026-03-11)
+
+
+### 📚 Documentation
+
+* Add NPM version badge to README. ([ae9c6ca](https://github.com/Michael-Obele/docshark/commit/ae9c6ca71dbd844de6b065a0e47021c7d1e3ec72))
+
 ## [0.1.9](https://github.com/Michael-Obele/docshark/compare/v0.1.8...v0.1.9) (2026-03-11)
 
 
