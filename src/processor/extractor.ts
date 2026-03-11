@@ -33,7 +33,28 @@ turndown.addRule('removeImages', {
 export function extractAndConvert(
     html: string,
     url: string,
+    contentType: string = 'text/html',
 ): { markdown: string; title: string; headings: Array<{ level: number; text: string }> } {
+    const isMarkdown = url.endsWith('.md') || url.endsWith('.txt') || contentType.includes('text/plain') || contentType.includes('text/markdown');
+    
+    if (isMarkdown && !html.trim().startsWith('<!DOCTYPE') && !html.trim().startsWith('<html')) {
+        const markdown = html.trim();
+        const titleMatch = markdown.match(/^#\s+(.+)$/m);
+        let title = titleMatch ? titleMatch[1].trim() : url.split('/').pop() || 'Untitled';
+        if (title.endsWith('.txt') || title.endsWith('.md')) {
+            title = title.slice(0, -4);
+        }
+        
+        const headings: Array<{ level: number; text: string }> = [];
+        const headingRegex = /^(#{1,6})\s+(.+)$/gm;
+        let match;
+        while ((match = headingRegex.exec(markdown)) !== null) {
+            headings.push({ level: match[1].length, text: match[2].trim() });
+        }
+        
+        return { markdown, title, headings };
+    }
+
     const { document } = parseHTML(html);
 
     // Set the document URL for Readability to resolve relative links

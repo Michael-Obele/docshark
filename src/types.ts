@@ -65,6 +65,7 @@ export interface FetchResult {
     etag?: string | null;
     lastModified?: string | null;
     unchanged?: boolean;
+    contentType?: string;
 }
 
 export interface CrawlConfig {

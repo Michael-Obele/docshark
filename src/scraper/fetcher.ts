@@ -27,7 +27,7 @@ export async function fetchPage(
     }
 
     // Auto mode: check if content is too short (possibly JS-rendered)
-    const { markdown } = extractAndConvert(result.html, url);
+    const { markdown } = extractAndConvert(result.html, url, result.contentType);
 
     if (markdown.length >= MIN_CONTENT_LENGTH) {
         return result;
@@ -75,6 +75,7 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Fetch
                 status: response.status,
                 etag: response.headers.get('etag'),
                 lastModified: response.headers.get('last-modified'),
+                contentType: response.headers.get('content-type') || undefined,
             };
         } catch (err) {
             if (attempt === retries) throw err;

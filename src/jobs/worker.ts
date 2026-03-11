@@ -51,7 +51,7 @@ export class CrawlWorker {
                     const result = await fetchPage(url, config.renderer);
 
                     // Extract content + convert to markdown
-                    const { markdown, title, headings } = extractAndConvert(result.html, url);
+                    const { markdown, title, headings } = extractAndConvert(result.html, url, result.contentType);
 
                     if (!markdown || markdown.length < 50) {
                         crawled++;
