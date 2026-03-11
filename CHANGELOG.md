@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/Michael-Obele/docshark/compare/v0.1.8...v0.1.9) (2026-03-11)
+
+
+### ✨ Features
+
+* Add NPM provenance publishing to the release workflow and set the release-please changelog type to default. ([7c6ed54](https://github.com/Michael-Obele/docshark/commit/7c6ed54ca8e51a3b73abf64cc775352937c9c1cf))
+
 ## 0.1.8 (2026-03-11)
 
 **Full Changelog**: https://github.com/Michael-Obele/docshark/compare/v0.1.7...v0.1.8
