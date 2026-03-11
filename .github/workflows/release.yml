@@ -8,12 +8,40 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write # Required by NPM Provenance to cryptographically sign the package
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Checkout repository
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        if: ${{ steps.release.outputs.release_created }}
+        uses: oven-sh/setup-bun@v1
+
+      - name: Setup Node (Required for npm provenance)
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: bun install
+        
+      - name: Build project
+        if: ${{ steps.release.outputs.release_created }}
+        run: bun run build
+        
+      - name: Publish to NPM with provenance
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm publish --provenance --access public
