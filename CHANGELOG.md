@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 (2026-03-11)
+
+**Full Changelog**: https://github.com/Michael-Obele/docshark/compare/v0.1.7...v0.1.8
+
 ## 0.1.7 (2026-03-07)
 
 **Full Changelog**: https://github.com/Michael-Obele/docshark/compare/v0.1.6...v0.1.7
