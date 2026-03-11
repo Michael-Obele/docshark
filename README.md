@@ -1,6 +1,7 @@
 # 🦈 DocShark
 
 [![Built with Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh/)
+[![NPM Version](https://img.shields.io/npm/v/docshark.svg?style=flat&color=blue)](https://www.npmjs.com/package/docshark)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Ready-0D1117.svg?style=flat&logo=github&logoColor=white)](https://modelcontextprotocol.io/)
 [![GitHub Release](https://img.shields.io/github/v/release/Michael-Obele/docshark?color=success)](https://github.com/Michael-Obele/docshark/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
