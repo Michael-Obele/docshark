@@ -15,10 +15,11 @@ const program = new Command()
 
 program
   .command("start", { isDefault: true })
-  .description("Start the MCP server")
+  .alias("s")
+  .description("Start the MCP server (aliases: s, -s)")
   .option("-p, --port <port>", "HTTP server port", "6380")
-  .option("--stdio", "Run in STDIO mode (for Claude Desktop, Cursor, etc.)")
-  .option("--data-dir <path>", "Data directory", "")
+  .option("-S, --stdio", "Run in STDIO mode (for Claude Desktop, Cursor, etc.)")
+  .option("-D, --data-dir <path>", "Data directory", "")
   .action(async (opts) => {
     if (opts.dataDir) {
       process.env.DOCSHARK_DATA_DIR = opts.dataDir;
@@ -36,13 +37,14 @@ program
 
 program
   .command("add <url>")
-  .description("Add a documentation library and start crawling")
+  .alias("a")
+  .description("Add a documentation library and start crawling (aliases: a, -a)")
   .option(
     "-n, --name <name>",
     "Library name (auto-generated from URL if omitted)",
   )
   .option("-d, --depth <n>", "Max crawl depth", "3")
-  .option("--lib-version <version>", "Library version")
+  .option("-V, --lib-version <version>", "Library version")
   .action(async (url, opts) => {
     db.init();
     try {
@@ -66,9 +68,10 @@ program
 
 program
   .command("search <query>")
-  .description("Search indexed documentation")
+  .alias("f")
+  .description("Search indexed documentation (aliases: f, -f)")
   .option("-l, --library <name>", "Filter by library")
-  .option("--limit <n>", "Max results", "5")
+  .option("-m, --limit <n>", "Max results", "5")
   .action(async (query, opts) => {
     db.init();
     const results = searchEngine.search(query, {
@@ -91,10 +94,12 @@ program
 
 program
   .command("list")
-  .description("List indexed libraries")
-  .action(() => {
+  .alias("l")
+  .description("List indexed libraries (aliases: l, -l)")
+  .option("-s, --status <status>", "Filter by status (indexed, crawling, error, all)", "all")
+  .action((opts) => {
     db.init();
-    const libs = db.listLibraries();
+    const libs = db.listLibraries(opts.status);
 
     if (libs.length === 0) {
       console.log(
@@ -117,7 +122,8 @@ program
 
 program
   .command("refresh <name>")
-  .description("Refresh an existing documentation library")
+  .alias("r")
+  .description("Refresh an existing documentation library (aliases: r, -r)")
   .action(async (name) => {
     db.init();
     try {
@@ -139,7 +145,8 @@ program
 
 program
   .command("remove <name>")
-  .description("Remove a documentation library and its index")
+  .alias("rm")
+  .description("Remove a documentation library and its index (aliases: rm, -rm)")
   .action((name) => {
     db.init();
     try {
@@ -156,13 +163,20 @@ program
   });
 
 program
-  .command("get <url>")
-  .description("Get the full markdown content of a specific indexed page")
-  .action((url) => {
+  .command("get [url]")
+  .alias("g")
+  .description("Get the full markdown content of a specific indexed page (aliases: g, -g)")
+  .option("-l, --library <name>", "Library name to search within")
+  .option("-p, --path <path>", "Relative path within the library")
+  .action((url, opts) => {
+    if (!url && (!opts.library || !opts.path)) {
+      console.error(`\n❌ Please provide either a URL, or both --library and --path\n`);
+      process.exit(1);
+    }
     db.init();
-    const page = db.getPage({ url });
+    const page = db.getPage({ url, library: opts.library, path: opts.path });
     if (!page) {
-      console.error(`\n❌ Page not found in index: ${url}\n`);
+      console.error(`\n❌ Page not found in index.\n`);
       process.exit(1);
     }
     console.log(`\n--- ${page.title} ---`);
@@ -171,7 +185,56 @@ program
     console.log("\n");
   });
 
-program.parse();
+// Intercept manual short flags (e.g., -l instead of l) so they act as command aliases
+const args = process.argv;
+const cmdAliases: Record<string, string> = {
+  "-s": "start",
+  "-a": "add",
+  "-f": "search",
+  "-l": "list",
+  "-r": "refresh",
+  "-rm": "remove",
+  "-g": "get",
+  "-i": "info",
+};
+if (args[2] && cmdAliases[args[2]]) {
+  args[2] = cmdAliases[args[2]];
+}
+
+program
+  .command("info <name>")
+  .alias("i")
+  .description("Get information about a library and list its pages (aliases: i, -i)")
+  .action((name) => {
+    db.init();
+    const lib = db.getLibraryByName(name);
+    if (!lib) {
+      console.error(`\n❌ Library not found: ${name}\n`);
+      process.exit(1);
+    }
+    console.log(`\n--- Library: ${lib.display_name} (${lib.name}) ---`);
+    console.log(`URL: ${lib.url}`);
+    console.log(`Status: ${lib.status}`);
+    console.log(`Pages: ${lib.page_count}`);
+    console.log(`Chunks: ${lib.chunk_count}`);
+    console.log(`Last Crawled: ${lib.last_crawled_at || "never"}`);
+
+    const pages = db.getPagesByLibrary(lib.id);
+    if (pages.length > 0) {
+      console.log(`\n--- Pages (${pages.length}) ---`);
+      console.table(
+        pages.map((p) => ({
+          Title: p.title || "Untitled",
+          Path: p.path,
+          URL: p.url,
+        }))
+      );
+    } else {
+      console.log(`\nNo pages found for this library.\n`);
+    }
+  });
+
+program.parse(args);
 
 /** Helper to wait for a crawl job to finish (CLI blocking mode) */
 async function waitForCrawl(jobId: string): Promise<void> {
