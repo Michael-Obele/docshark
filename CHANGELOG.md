@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/Michael-Obele/docshark/compare/v0.1.11...v0.1.12) (2026-03-12)
+
+
+### 🐛 Bug Fixes
+
+* **release:** update Node.js version to 24 and set registry URL ([2887a29](https://github.com/Michael-Obele/docshark/commit/2887a2920ab61adf6eb4bf4aa6b6d86143ffd34f))
+
 ## [0.1.11](https://github.com/Michael-Obele/docshark/compare/v0.1.10...v0.1.11) (2026-03-11)
 
 
