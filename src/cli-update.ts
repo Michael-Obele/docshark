@@ -14,6 +14,11 @@ type UpdateCheckCache = {
   checkedAt: number;
 };
 
+type RunUpdateOptions = {
+  checkOnly?: boolean;
+  quiet?: boolean;
+};
+
 export async function maybeNotifyAboutUpdate(options: {
   commandName: string;
   stdioMode: boolean;
@@ -35,17 +40,38 @@ export async function maybeNotifyAboutUpdate(options: {
   );
 }
 
-export async function runUpdateCommand(): Promise<void> {
+export async function runUpdateCommand(
+  options: RunUpdateOptions = {},
+): Promise<void> {
   const latestVersion = await getLatestVersion({ forceRefresh: true });
   if (!latestVersion) {
     printFallbackUpdateCommand(
       "Could not check the npm registry for the latest DocShark release.",
+      options.quiet,
     );
+    process.exit(1);
     return;
   }
 
-  if (compareVersions(latestVersion, VERSION) <= 0) {
-    console.log(`\nDocShark is already up to date (${VERSION}).\n`);
+  const hasUpdate = compareVersions(latestVersion, VERSION) > 0;
+
+  if (options.checkOnly) {
+    if (!options.quiet) {
+      if (hasUpdate) {
+        console.log(`\nUpdate available: ${VERSION} -> ${latestVersion}.\n`);
+      } else {
+        console.log(`\nDocShark is already up to date (${VERSION}).\n`);
+      }
+    }
+
+    process.exit(hasUpdate ? 10 : 0);
+    return;
+  }
+
+  if (!hasUpdate) {
+    if (!options.quiet) {
+      console.log(`\nDocShark is already up to date (${VERSION}).\n`);
+    }
     return;
   }
 
@@ -53,13 +79,18 @@ export async function runUpdateCommand(): Promise<void> {
   if (!bunPath) {
     printFallbackUpdateCommand(
       `A newer version is available (${VERSION} -> ${latestVersion}), but Bun was not detected on PATH.`,
+      options.quiet,
     );
+    process.exit(1);
     return;
   }
 
-  console.log(
-    `\nUpdating DocShark ${VERSION} -> ${latestVersion} with Bun...\n`,
-  );
+  if (!options.quiet) {
+    console.log(
+      `\nUpdating DocShark ${VERSION} -> ${latestVersion} with Bun...\n`,
+    );
+  }
+
   const exitCode = await spawnProcess(bunPath, [
     "add",
     "-g",
@@ -69,11 +100,14 @@ export async function runUpdateCommand(): Promise<void> {
   if (exitCode !== 0) {
     printFallbackUpdateCommand(
       `The Bun update command exited with code ${exitCode}.`,
+      options.quiet,
     );
     process.exit(exitCode ?? 1);
   }
 
-  console.log(`\nDocShark was updated to ${latestVersion}.\n`);
+  if (!options.quiet) {
+    console.log(`\nDocShark was updated to ${latestVersion}.\n`);
+  }
 }
 
 function shouldSkipUpdateNotice(options: {
@@ -213,7 +247,11 @@ function spawnProcess(command: string, args: string[]): Promise<number | null> {
   });
 }
 
-function printFallbackUpdateCommand(reason: string): void {
+function printFallbackUpdateCommand(reason: string, quiet = false): void {
+  if (quiet) {
+    return;
+  }
+
   console.error(`\n${reason}`);
   console.error(
     `Run \"bun add -g ${PACKAGE_NAME}@latest\" to update DocShark.\n`,

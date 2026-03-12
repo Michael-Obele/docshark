@@ -39,7 +39,9 @@ program
 program
   .command("add <url>")
   .alias("a")
-  .description("Add a documentation library and start crawling (aliases: a, -a)")
+  .description(
+    "Add a documentation library and start crawling (aliases: a, -a)",
+  )
   .option(
     "-n, --name <name>",
     "Library name (auto-generated from URL if omitted)",
@@ -97,7 +99,11 @@ program
   .command("list")
   .alias("l")
   .description("List indexed libraries (aliases: l, -l)")
-  .option("-s, --status <status>", "Filter by status (indexed, crawling, error, all)", "all")
+  .option(
+    "-s, --status <status>",
+    "Filter by status (indexed, crawling, error, all)",
+    "all",
+  )
   .action((opts) => {
     db.init();
     const libs = db.listLibraries(opts.status);
@@ -147,7 +153,9 @@ program
 program
   .command("remove <name>")
   .alias("rm")
-  .description("Remove a documentation library and its index (aliases: rm, -rm)")
+  .description(
+    "Remove a documentation library and its index (aliases: rm, -rm)",
+  )
   .action((name) => {
     db.init();
     try {
@@ -166,12 +174,16 @@ program
 program
   .command("get [url]")
   .alias("g")
-  .description("Get the full markdown content of a specific indexed page (aliases: g, -g)")
+  .description(
+    "Get the full markdown content of a specific indexed page (aliases: g, -g)",
+  )
   .option("-l, --library <name>", "Library name to search within")
   .option("-p, --path <path>", "Relative path within the library")
   .action((url, opts) => {
     if (!url && (!opts.library || !opts.path)) {
-      console.error(`\n❌ Please provide either a URL, or both --library and --path\n`);
+      console.error(
+        `\n❌ Please provide either a URL, or both --library and --path\n`,
+      );
       process.exit(1);
     }
     db.init();
@@ -189,9 +201,22 @@ program
 program
   .command("update")
   .alias("u")
-  .description("Update the global Bun installation of DocShark (aliases: u, -u)")
-  .action(async () => {
-    await runUpdateCommand();
+  .description(
+    "Update the global Bun installation of DocShark (aliases: u, -u)",
+  )
+  .option(
+    "-c, --check",
+    "Only check whether a newer DocShark version is available",
+  )
+  .option(
+    "-q, --quiet",
+    "Suppress DocShark status output and rely on exit codes",
+  )
+  .action(async (opts) => {
+    await runUpdateCommand({
+      checkOnly: opts.check,
+      quiet: opts.quiet,
+    });
   });
 
 // Intercept manual short flags (e.g., -l instead of l) so they act as command aliases
@@ -214,7 +239,9 @@ if (args[2] && cmdAliases[args[2]]) {
 program
   .command("info <name>")
   .alias("i")
-  .description("Get information about a library and list its pages (aliases: i, -i)")
+  .description(
+    "Get information about a library and list its pages (aliases: i, -i)",
+  )
   .action((name) => {
     db.init();
     const lib = db.getLibraryByName(name);
@@ -237,7 +264,7 @@ program
           Title: p.title || "Untitled",
           Path: p.path,
           URL: p.url,
-        }))
+        })),
       );
     } else {
       console.log(`\nNo pages found for this library.\n`);
@@ -246,9 +273,10 @@ program
 
 program.hook("preAction", async (_thisCommand, actionCommand) => {
   const commandName = actionCommand.name();
-  const options = typeof actionCommand.opts === "function"
-    ? actionCommand.opts<{ stdio?: boolean }>()
-    : {};
+  const options =
+    typeof actionCommand.opts === "function"
+      ? actionCommand.opts<{ stdio?: boolean }>()
+      : {};
 
   await maybeNotifyAboutUpdate({
     commandName,

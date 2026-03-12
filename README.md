@@ -64,11 +64,10 @@ bunx docshark search "schema validation"
 
 To install DocShark globally as a CLI tool:
 
-```bash
-# Using npm
-npm install -g docshark
+DocShark is intended to be installed and run with Bun.
 
-# Using Bun
+```bash
+# Global Bun installation
 bun add -g docshark
 ```
 
@@ -76,7 +75,17 @@ After installation, you can use the `docshark` command:
 
 ```bash
 docshark list
+
+# Update the global Bun installation when a new release is published
+docshark update
+
+# Script-friendly update check
+docshark update --check --quiet
 ```
+
+Interactive CLI runs will also let you know when a newer version is available. Update notices are intentionally skipped for MCP `stdio` mode so they never interfere with protocol output.
+
+For scripts, `docshark update --check` exits `0` when current, `10` when a newer version is available, and `1` when the version check could not be completed.
 
 ## 🔌 MCP Integration
 
