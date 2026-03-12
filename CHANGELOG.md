@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.13](https://github.com/Michael-Obele/docshark/compare/v0.1.12...v0.1.13) (2026-03-12)
+
+
+### ✨ Features
+
+* add workflow to cleanup release-please branches on pull request closure ([b250d35](https://github.com/Michael-Obele/docshark/commit/b250d352df810998ed4eb9a1876bf5149c2e9d7d))
+* enhance update command with check and quiet options in CLI ([9f91aba](https://github.com/Michael-Obele/docshark/commit/9f91abafccaa21c9fb43dba5a5548b473a4dc266))
+* implement Bun-first update command and version notification in CLI ([ce31a13](https://github.com/Michael-Obele/docshark/commit/ce31a132d91e3302699afe51f6295a9b0b815e20))
+
 ## [0.1.12](https://github.com/Michael-Obele/docshark/compare/v0.1.11...v0.1.12) (2026-03-12)
 
 
