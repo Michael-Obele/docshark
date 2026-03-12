@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { startHttpServer } from "./http.js";
 import { StdioTransport } from "@tmcp/transport-stdio";
 import { server, db, searchEngine, libraryService } from "./server.js";
+import { maybeNotifyAboutUpdate, runUpdateCommand } from "./cli-update.js";
 import { VERSION } from "./version.js";
 
 const program = new Command()
@@ -185,6 +186,14 @@ program
     console.log("\n");
   });
 
+program
+  .command("update")
+  .alias("u")
+  .description("Update the global Bun installation of DocShark (aliases: u, -u)")
+  .action(async () => {
+    await runUpdateCommand();
+  });
+
 // Intercept manual short flags (e.g., -l instead of l) so they act as command aliases
 const args = process.argv;
 const cmdAliases: Record<string, string> = {
@@ -196,6 +205,7 @@ const cmdAliases: Record<string, string> = {
   "-rm": "remove",
   "-g": "get",
   "-i": "info",
+  "-u": "update",
 };
 if (args[2] && cmdAliases[args[2]]) {
   args[2] = cmdAliases[args[2]];
@@ -234,7 +244,19 @@ program
     }
   });
 
-program.parse(args);
+program.hook("preAction", async (_thisCommand, actionCommand) => {
+  const commandName = actionCommand.name();
+  const options = typeof actionCommand.opts === "function"
+    ? actionCommand.opts<{ stdio?: boolean }>()
+    : {};
+
+  await maybeNotifyAboutUpdate({
+    commandName,
+    stdioMode: commandName === "start" && options.stdio === true,
+  });
+});
+
+await program.parseAsync(args);
 
 /** Helper to wait for a crawl job to finish (CLI blocking mode) */
 async function waitForCrawl(jobId: string): Promise<void> {
