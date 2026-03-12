@@ -1,0 +1,15 @@
+{
+  "name": "docshark-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.7.1",
+  "scripts": {
+    "dev:site": "pnpm --filter site dev",
+    "build:site": "pnpm --filter site build",
+    "preview:site": "pnpm --filter site preview",
+    "check:site": "pnpm --filter site check",
+    "dev:core": "bun run packages/core/src/cli.ts start",
+    "build:core": "cd packages/core && bun run build",
+    "check:core": "bunx tsc --noEmit -p packages/core/tsconfig.json",
+    "check": "pnpm check:core && pnpm check:site"
+  }
+}
