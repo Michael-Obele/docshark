@@ -1,2 +1,2 @@
 // This file is automatically updated by release-please
-export const VERSION = '0.1.11'; // x-release-please-version
+export const VERSION = '0.1.12'; // x-release-please-version
