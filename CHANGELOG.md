@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/Michael-Obele/docshark/compare/v0.1.13...v0.1.14) (2026-03-12)
+
+
+### ✨ Features
+
+* add initial draft for DocShark website repo strategy design ([10e0acb](https://github.com/Michael-Obele/docshark/commit/10e0acb8a7093d08840addaa696ca5926b0b2c79))
+
 ## [0.1.13](https://github.com/Michael-Obele/docshark/compare/v0.1.12...v0.1.13) (2026-03-12)
 
 
