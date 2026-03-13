@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Logo from "$lib/components/logo.svelte";
   import Github from "@lucide/svelte/icons/github";
 </script>
 
@@ -8,7 +7,13 @@
     class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8"
   >
     <div class="space-y-3">
-      <Logo class="opacity-80" />
+      <lord-icon
+        src="https://cdn.lordicon.com/gxajzyky.json"
+        trigger="hover"
+        class="size-16"
+        title="DocShark"
+      >
+      </lord-icon>
       <p class="max-w-xl text-sm leading-6 text-muted-foreground">
         A local-first research notebook for software documentation. Crawl,
         index, and serve real docs to coding agents without adding a cloud layer

@@ -7,6 +7,7 @@
       "dependencies": {
         "@fontsource-variable/newsreader": "^5.2.10",
         "@fontsource/ibm-plex-sans": "^5.2.8",
+        "@lordicon/element": "^2.1.0",
         "@lucide/svelte": "^0.561.0",
         "clsx": "^2.1.1",
         "mode-watcher": "^1.1.0",
@@ -111,6 +112,10 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@lordicon/element": ["@lordicon/element@2.1.0", "", { "dependencies": { "@lordicon/web": "^1.0.0" } }, "sha512-zTQn6vT3ALub534aWYc90A4DxlPhOpI3FJiFVRZsry1GyMcdMinoI3frIuMCvVVEUPAstevleSZhNXNI0U+SDw=="],
+
+    "@lordicon/web": ["@lordicon/web@1.0.0", "", {}, "sha512-ffFZGtMpAJiYjFYiWOoPMCZt5Toacu7cvycC9yk8wDhc5WtXxnzhjaxHlZ3qM5PLYJlAF2dYeIUqcJCkH2f+dw=="],
 
     "@lucide/svelte": ["@lucide/svelte@0.561.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-vofKV2UFVrKE6I4ewKJ3dfCXSV6iP6nWVmiM83MLjsU91EeJcEg7LoWUABLp/aOTxj1HQNbJD1f3g3L0JQgH9A=="],
 

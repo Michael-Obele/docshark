@@ -2,7 +2,6 @@
   import { page } from "$app/state";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { docsNavigation } from "$lib/content";
-  import Logo from "$lib/components/logo.svelte";
 
   let pathname = $derived(page.url.pathname);
 
@@ -20,9 +19,16 @@
   <Sidebar.Header class="px-3 pt-3">
     <a
       href="/docs"
+      title="Go to Docs"
       class="soft-panel flex items-center justify-between rounded-[1.3rem] px-3 py-3 transition-transform hover:-translate-y-0.5"
     >
-      <Logo class="text-sm" />
+      <lord-icon
+        src="https://cdn.lordicon.com/gxajzyky.json"
+        trigger="hover"
+        class="size-8"
+        title="DocShark"
+      >
+      </lord-icon>
     </a>
     <div class="px-1 pt-3">
       <p class="section-kicker mb-2">DocShark notebook</p>

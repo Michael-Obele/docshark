@@ -11,6 +11,25 @@
   import SiteFooter from "$lib/components/site-footer.svelte";
 
   let { children } = $props();
+
+  // Initialize Lordicons on client side
+  // Original approach with .then() - commented out for study
+  // $effect(() => {
+  //   if (browser) {
+  //     import("@lordicon/element").then(() => {
+  //       // Lordicons library loaded and registered
+  //     });
+  //   }
+  // });
+
+  // IIFE approach with async/await
+  $effect(() => {
+    if (browser) {
+      (async () => {
+        await import("@lordicon/element");
+      })();
+    }
+  });
 </script>
 
 {#if browser}

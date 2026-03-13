@@ -3,7 +3,6 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import ThemeToggle from "$lib/components/theme-toggle.svelte";
-  import Logo from "$lib/components/logo.svelte";
   import Menu from "@lucide/svelte/icons/menu";
   import Github from "@lucide/svelte/icons/github";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -32,9 +31,15 @@
   >
     <a
       href="/"
-      class="group flex items-center gap-4 transition-opacity hover:opacity-80"
+      class="group flex items-center gap-3 transition-opacity hover:opacity-80"
     >
-      <Logo />
+      <lord-icon
+        src="https://cdn.lordicon.com/gxajzyky.json"
+        trigger="hover"
+        class="size-12"
+        title="DocShark"
+      >
+      </lord-icon>
       <span
         class="hidden text-[0.72rem] font-medium uppercase tracking-[0.26em] text-muted-foreground/80 lg:inline-flex"
       >
@@ -89,7 +94,13 @@
           <Sheet.Content side="right">
             <Sheet.Header>
               <Sheet.Title>
-                <Logo />
+                <lord-icon
+                  src="https://cdn.lordicon.com/gxajzyky.json"
+                  trigger="hover"
+                  class="size-10"
+                  title="DocShark"
+                >
+                </lord-icon>
               </Sheet.Title>
               <Sheet.Description class="sr-only"
                 >Navigation menu</Sheet.Description
