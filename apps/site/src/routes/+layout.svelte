@@ -9,6 +9,7 @@
   import { ModeWatcher } from "mode-watcher";
   import SiteHeader from "$lib/components/site-header.svelte";
   import SiteFooter from "$lib/components/site-footer.svelte";
+  import { onMount } from "svelte";
 
   let { children } = $props();
 
@@ -23,12 +24,18 @@
   // });
 
   // IIFE approach with async/await
-  $effect(() => {
-    if (browser) {
-      (async () => {
-        await import("@lordicon/element");
-      })();
-    }
+  // $effect(() => {
+  //   if (browser) {
+  //     (async () => {
+  //       await import("@lordicon/element");
+  //     })();
+  //   }
+  // });
+
+  onMount(async () => {
+    // Dynamically import @lordicon/element *inside* onMount
+    const { defineElement } = await import("@lordicon/element");
+    defineElement();
   });
 </script>
 
