@@ -10,6 +10,7 @@
       <lord-icon
         src="https://cdn.lordicon.com/gxajzyky.json"
         trigger="hover"
+        colors="primary:#4d8ddb,secondary:#f2f2f1"
         class="size-16"
         title="DocShark"
       >

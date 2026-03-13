@@ -36,6 +36,7 @@
       <lord-icon
         src="https://cdn.lordicon.com/gxajzyky.json"
         trigger="hover"
+        colors="primary:#4d8ddb,secondary:#f2f2f1"
         class="size-12"
         title="DocShark"
       >
@@ -97,6 +98,7 @@
                 <lord-icon
                   src="https://cdn.lordicon.com/gxajzyky.json"
                   trigger="hover"
+                  colors="primary:#4d8ddb,secondary:#f2f2f1"
                   class="size-10"
                   title="DocShark"
                 >
