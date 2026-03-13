@@ -1,0 +1,99 @@
+---
+title: Database Schema
+description: SQLite database design with FTS5 full-text search for documentation indexing.
+order: 5
+---
+
+<script lang="ts">
+  import Callout from "$lib/components/docs/callout.svelte";
+</script>
+
+# Database Schema
+
+DocShark uses SQLite with FTS5 full-text search. Zero external dependencies — uses `bun:sqlite` which bundles SQLite natively.
+
+<Callout title="Schema strategy" label="Data layer" tone="note">
+  The schema prioritizes deterministic crawl updates and fast retrieval over
+  relational complexity. Most joins stay shallow and indexed by library and page identifiers.
+</Callout>
+
+## Tables Overview
+
+```
+libraries ──< pages ──< chunks ──< chunks_fts (FTS5)
+                                    crawl_jobs
+```
+
+## libraries
+
+Stores metadata about each indexed documentation source.
+
+| Column         | Type    | Description                    |
+| -------------- | ------- | ------------------------------ |
+| `id`           | TEXT    | Primary key (ULID)             |
+| `name`         | TEXT    | Unique slug identifier         |
+| `display_name` | TEXT    | Human-readable name            |
+| `url`          | TEXT    | Base documentation URL         |
+| `version`      | TEXT    | Optional version string        |
+| `page_count`   | INTEGER | Number of indexed pages        |
+| `chunk_count`  | INTEGER | Number of search chunks        |
+| `status`       | TEXT    | `indexed`, `crawling`, `error` |
+| `config`       | TEXT    | JSON config blob               |
+| `created_at`   | TEXT    | ISO timestamp                  |
+| `updated_at`   | TEXT    | ISO timestamp                  |
+
+## pages
+
+Individual documentation pages belonging to a library.
+
+| Column               | Type | Description                  |
+| -------------------- | ---- | ---------------------------- |
+| `id`                 | TEXT | Primary key (ULID)           |
+| `library_id`         | TEXT | Foreign key → libraries      |
+| `url`                | TEXT | Full page URL                |
+| `path`               | TEXT | Relative path within library |
+| `title`              | TEXT | Page title                   |
+| `content_markdown`   | TEXT | Full Markdown content        |
+| `content_hash`       | TEXT | For incremental updates      |
+| `http_etag`          | TEXT | HTTP ETag header             |
+| `http_last_modified` | TEXT | HTTP Last-Modified header    |
+| `created_at`         | TEXT | ISO timestamp                |
+| `updated_at`         | TEXT | ISO timestamp                |
+
+## chunks
+
+Semantic chunks of documentation content, linked to their source page.
+
+| Column              | Type    | Description             |
+| ------------------- | ------- | ----------------------- |
+| `id`                | TEXT    | Primary key (ULID)      |
+| `page_id`           | TEXT    | Foreign key → pages     |
+| `library_id`        | TEXT    | Foreign key → libraries |
+| `heading_hierarchy` | TEXT    | Breadcrumb context      |
+| `content`           | TEXT    | Chunk text content      |
+| `token_count`       | INTEGER | Approximate token count |
+| `chunk_index`       | INTEGER | Position within page    |
+| `created_at`        | TEXT    | ISO timestamp           |
+
+## chunks_fts (FTS5)
+
+Virtual FTS5 table for full-text search across all chunks.
+
+```sql
+CREATE VIRTUAL TABLE chunks_fts USING fts5(
+  content,
+  heading_hierarchy,
+  content='chunks',
+  content_rowid='rowid',
+  tokenize='porter unicode61'
+);
+```
+
+The FTS5 index is automatically kept in sync via database triggers on the `chunks` table (INSERT, DELETE, UPDATE).
+
+## Design Decisions
+
+- **WAL mode** — Write-Ahead Logging for concurrent read/write access
+- **ON CONFLICT** — Upsert semantics for robust cross-process crawling
+- **CASCADE deletes** — Removing a library cleans up all pages, chunks, and FTS entries
+- **Porter stemming** — `tokenize='porter unicode61'` for English-language documentation search

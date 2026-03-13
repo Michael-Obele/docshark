@@ -1,0 +1,128 @@
+---
+title: MCP Tools
+description: Complete specification of all 6 MCP tools that DocShark exposes to AI assistants.
+order: 3
+---
+
+<script lang="ts">
+      import Callout from "$lib/components/docs/callout.svelte";
+</script>
+
+# MCP Tools Specification
+
+DocShark exposes 6 MCP tools following the [Six-Tool Pattern](https://www.mcpbundles.com/blog/mcp-tool-design-pattern) and [MCP best practices](https://www.philschmid.de/mcp-best-practices).
+
+<Callout title="Design intent" label="Agent UX" tone="note">
+      The tool set is intentionally narrow. Fewer, purpose-specific tools reduce
+      model uncertainty and keep agent behavior predictable across clients.
+</Callout>
+
+## Design Principles
+
+1. **Tools are a UI for agents** — designed for how an LLM thinks, not a REST API wrapper
+2. **Descriptions are everything** — the LLM reads descriptions to decide when to use a tool
+3. **Pre-processed results** — formatted for LLM consumption, not raw data dumps
+4. **6 tools max** — avoids context rot with clear, non-overlapping purposes
+5. **Idempotent reads** — search and list operations are safe to retry
+
+## Tool Workflow
+
+```
+Agent needs documentation info
+         │
+         ▼
+  ┌──────────────┐
+  │ list_libraries│ ← "What docs are indexed?"
+  └──────┬───────┘
+         │
+         ├── Library exists ──→ search_docs ──→ get_doc_page
+         │                      (80% of usage)   (deep read)
+         │
+         └── Not found ──────→ add_library
+                                     │
+                               refresh_library  (update)
+                                     │
+                               remove_library   (cleanup)
+```
+
+## search_docs
+
+The primary tool. Full-text search across all indexed documentation.
+
+**When agents use it:** Whenever they need to find information about a library, API, framework feature, or code pattern.
+
+| Parameter | Type   | Required | Description                               |
+| --------- | ------ | -------- | ----------------------------------------- |
+| `query`   | string | Yes      | Natural language or specific search terms |
+| `library` | string | No       | Filter results to a specific library      |
+| `limit`   | number | No       | Max results (1-20, default: 5)            |
+
+**Example output:**
+
+```
+## Results for "svelte transitions"
+
+### 1. Transitions — Svelte 5 Documentation
+**Source:** https://svelte.dev/docs/svelte/transition
+**Section:** Built-in transitions > fade
+
+Svelte provides several built-in transition functions:
+- `fade` — fades the element in and out
+- `fly` — flies the element in from a specified position
+```
+
+## list_libraries
+
+Discovery tool. Shows what documentation is currently indexed.
+
+| Parameter | Type   | Required | Description                                      |
+| --------- | ------ | -------- | ------------------------------------------------ |
+| `status`  | string | No       | Filter: `indexed`, `crawling`, `error`, or `all` |
+
+**Example output:**
+
+```
+## Indexed Libraries (4 total)
+
+| Library     | URL                         | Pages | Chunks | Status  |
+| ----------- | --------------------------- | ----- | ------ | ------- |
+| svelte-5    | https://svelte.dev/docs     | 47    | 312    | indexed |
+| tailwind-v4 | https://tailwindcss.com/docs| 89    | 654    | indexed |
+```
+
+## get_doc_page
+
+Deep read. Retrieve full markdown content of a specific documentation page.
+
+| Parameter | Type   | Required | Description                        |
+| --------- | ------ | -------- | ---------------------------------- |
+| `url`     | string | No       | Full URL of the documentation page |
+| `library` | string | No       | Library name to search within      |
+| `path`    | string | No       | Relative path within the library   |
+
+## add_library
+
+Add a new documentation website to be crawled and indexed.
+
+| Parameter   | Type   | Required | Description                                  |
+| ----------- | ------ | -------- | -------------------------------------------- |
+| `url`       | string | Yes      | Base URL of the docs site                    |
+| `name`      | string | No       | Short identifier (auto-generated if omitted) |
+| `version`   | string | No       | Version string (e.g., "5.0.0")               |
+| `max_depth` | number | No       | Max crawl depth (1-10, default: 3)           |
+
+## refresh_library
+
+Re-crawl an existing library to get the latest documentation. Only re-fetches pages that have changed via HTTP ETags/Last-Modified.
+
+| Parameter | Type   | Required | Description             |
+| --------- | ------ | -------- | ----------------------- |
+| `library` | string | Yes      | Library name to refresh |
+
+## remove_library
+
+Permanently remove a documentation library and all its indexed content.
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| `library` | string | Yes      | Library name to remove |

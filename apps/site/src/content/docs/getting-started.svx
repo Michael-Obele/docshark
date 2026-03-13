@@ -1,0 +1,117 @@
+---
+title: Getting Started
+description: Install and configure DocShark as an MCP server for your AI coding assistant.
+order: 2
+---
+
+<script lang="ts">
+  import Callout from "$lib/components/docs/callout.svelte";
+  import HighlightGrid from "$lib/components/docs/highlight-grid.svelte";
+
+  const setupHighlights = [
+    {
+      title: "Works with standard clients",
+      body: "Claude Desktop, Cursor, and VS Code can all launch DocShark through command-based MCP config.",
+    },
+    {
+      title: "No daemon required",
+      body: "Run `docshark start --stdio` directly from the client command; no extra service management needed.",
+    },
+  ];
+</script>
+
+# Getting Started
+
+DocShark is available on npm and can be used as an MCP server across various AI clients.
+
+<Callout title="Recommended install path" label="Setup" tone="tip">
+  Use `bunx` or `npx` first while validating your workflow, then switch to a
+  global install only if your team benefits from shorter startup commands.
+</Callout>
+
+## Installation
+
+```bash
+# Install globally (optional)
+npm install -g docshark
+
+# Or run on the fly
+npx docshark [command]
+bunx docshark [command]
+```
+
+<HighlightGrid items={setupHighlights} />
+
+## IDE & Desktop Integrations
+
+### Claude Desktop
+
+Edit your `claude_desktop_config.json`:
+
+- **macOS/Linux**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "docshark": {
+      "command": "bunx",
+      "args": ["-y", "docshark", "start", "--stdio"]
+    }
+  }
+}
+```
+
+### Cursor
+
+1. Go to **Settings > Models > MCP**
+2. Add a command-based server:
+   - **Name:** `docshark`
+   - **Command:** `bunx -y docshark start --stdio`
+
+### VS Code (Copilot)
+
+Add to your workspace `.vscode/settings.json` or `.vscode/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "docshark": {
+      "command": "bunx",
+      "args": ["-y", "docshark", "start", "--stdio"]
+    }
+  }
+}
+```
+
+## Basic Usage
+
+```bash
+# Add a documentation site
+npx docshark add https://svelte.dev/docs
+
+# List indexed libraries
+npx docshark list
+
+# Search across all docs
+npx docshark search "component lifecycle"
+
+# Search within a specific library
+npx docshark search "runes" --library svelte-dev
+
+# Get a specific page
+npx docshark get svelte-dev /docs/svelte/overview
+```
+
+## Available Tools
+
+Once connected as an MCP server, DocShark exposes these tools to your AI assistant:
+
+| Tool              | Action                     | Parameters                  |
+| ----------------- | -------------------------- | --------------------------- |
+| `add_library`     | Index a documentation site | `url`, `name`, `maxDepth`   |
+| `search_docs`     | Search indexed docs        | `query`, `library`, `limit` |
+| `list_libraries`  | List all indexed libraries | —                           |
+| `get_doc_page`    | Read a specific page       | `library`, `path`           |
+| `refresh_library` | Re-crawl for updates       | `library`                   |
+| `remove_library`  | Delete an indexed library  | `library`                   |

@@ -1,0 +1,94 @@
+---
+title: Project Structure
+description: How DocShark is organized — CLI, MCP server, scraper, processor, and storage layers.
+order: 6
+---
+
+<script lang="ts">
+	import Callout from "$lib/components/docs/callout.svelte";
+</script>
+
+# Project Structure
+
+DocShark follows a layered architecture with clear separation between entry points, business logic, and data access.
+
+<Callout title="Layering rule" label="Codebase" tone="tip">
+	Entry points and transport layers should orchestrate only. Business logic
+	stays in services and worker modules, while persistence remains in storage modules.
+</Callout>
+
+## Directory Layout
+
+```
+packages/core/
+├── src/
+│   ├── cli.ts              # Commander.js CLI entry
+│   ├── server.ts           # MCP server (JSON-RPC via TMCP)
+│   ├── http.ts             # HTTP server (REST + MCP transport)
+│   ├── types.ts            # Shared TypeScript types
+│   ├── index.ts            # Library exports
+│   │
+│   ├── tools/              # MCP tool implementations
+│   │   ├── add-library.ts
+│   │   ├── search-docs.ts
+│   │   ├── list-libraries.ts
+│   │   ├── get-doc-page.ts
+│   │   ├── refresh-library.ts
+│   │   └── remove-library.ts
+│   │
+│   ├── services/           # Business logic
+│   │   └── library.ts      # Library management service
+│   │
+│   ├── scraper/            # URL discovery & fetching
+│   │   ├── discoverer.ts   # URL discovery (sitemap, nav, BFS)
+│   │   ├── fetcher.ts      # HTTP fetcher with caching
+│   │   ├── rate-limiter.ts # Request rate limiting
+│   │   └── robots.ts       # robots.txt parser
+│   │
+│   ├── processor/          # Content processing
+│   │   ├── extractor.ts    # HTML → clean content
+│   │   └── chunker.ts      # Content → semantic chunks
+│   │
+│   ├── storage/            # Data persistence
+│   │   ├── db.ts           # SQLite database (bun:sqlite)
+│   │   └── search.ts       # FTS5 search engine
+│   │
+│   ├── jobs/               # Background processing
+│   │   ├── worker.ts       # Crawl pipeline worker
+│   │   ├── manager.ts      # Job lifecycle management
+│   │   └── events.ts       # Event bus for SSE
+│   │
+│   └── api/                # REST API
+│       └── router.ts       # HTTP route handler
+│
+├── package.json
+└── tsconfig.json
+```
+
+## Architecture Layers
+
+### Entry Points
+
+- **CLI** (`cli.ts`) — Commander.js commands for `add`, `search`, `list`, `get`, `refresh`, `remove`, `start`
+- **MCP Server** (`server.ts`) — JSON-RPC MCP server via TMCP, exposes 6 tools
+- **HTTP Server** (`http.ts`) — Bun.serve combining REST API + MCP transport
+
+### Tools Layer
+
+Each MCP tool is a separate file implementing input validation (Valibot schemas) and formatted output. Tools delegate to the services layer.
+
+### Services Layer
+
+Business logic orchestration. The `library.ts` service manages the full lifecycle: adding, refreshing, removing libraries and coordinating crawl jobs.
+
+### Worker Pipeline
+
+The asynchronous crawl pipeline runs in the background:
+
+```
+Discover (Crawler) → Fetch → Extract (HTML→MD) → Chunk → Index (SQLite)
+```
+
+### Storage Layer
+
+Direct SQLite access via `bun:sqlite`. WAL mode for concurrent access. FTS5 virtual tables with porter stemming for search.

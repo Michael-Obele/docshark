@@ -1,0 +1,112 @@
+---
+title: Scraping Pipeline
+description: How DocShark discovers, fetches, extracts, and indexes documentation from any website.
+order: 4
+---
+
+<script lang="ts">
+	import Callout from "$lib/components/docs/callout.svelte";
+	import HighlightGrid from "$lib/components/docs/highlight-grid.svelte";
+
+	const pipelineHighlights = [
+		{
+			title: "Cascading discovery",
+			body: "Starts with sitemap and navigation extraction before falling back to breadth-first crawling.",
+		},
+		{
+			title: "Structure-preserving chunks",
+			body: "Heading-aware split logic retains context and keeps chunk retrieval grounded.",
+		},
+	];
+</script>
+
+# Scraping Pipeline
+
+DocShark processes documentation through a six-phase pipeline:
+
+<Callout title="Pipeline principle" label="Architecture" tone="tip">
+	Every stage emits a cleaner intermediate representation than the last. This
+	keeps indexing deterministic and makes retrieval outputs easier for agents to consume.
+</Callout>
+
+```
+URL → Discover → Fetch → Extract → Convert → Chunk → Index
+```
+
+| Phase       | What                  | Tool                     | Output       |
+| ----------- | --------------------- | ------------------------ | ------------ |
+| 1. Discover | Find all page URLs    | sitemap.xml / link crawl | URL list     |
+| 2. Fetch    | HTTP GET with caching | `fetch` / Puppeteer      | Raw HTML     |
+| 3. Extract  | Strip nav/footer/ads  | Readability + linkedom   | Clean HTML   |
+| 4. Convert  | HTML → Markdown       | Turndown                 | Markdown     |
+| 5. Chunk    | Split by headings     | Custom semantic splitter | Chunks       |
+| 6. Index    | Store + FTS5          | SQLite                   | Search-ready |
+
+<HighlightGrid items={pipelineHighlights} />
+
+## 1. Discovery
+
+DocShark uses a cascading strategy to find all pages in a documentation site:
+
+- **Sitemap.xml** (preferred) — Parse `/sitemap.xml` for page URLs
+- **Navigation-aware extraction** — Extract URLs from the site's navigation structure
+- **Link crawl** (fallback) — BFS from root URL, following internal links
+- **robots.txt** — Respect disallowed paths via `robots-parser`
+
+## 2. Fetching
+
+- **Default:** Native `fetch` with proper `User-Agent` header
+- **Incremental:** Sends `If-None-Match` / `If-Modified-Since` to skip unchanged pages (HTTP 304)
+- **Rate limiting:** Configurable delay (default 500ms between requests)
+- **Retry:** Exponential backoff on failure (3 attempts)
+- **Timeout:** 30 seconds per request
+- **JS rendering:** Auto-detects SPA sites and upgrades to `puppeteer-core` when needed
+
+## 3. Content Extraction
+
+Uses `@mozilla/readability` with `linkedom` (lighter than jsdom):
+
+- Strips navigation, sidebars, footers, and ads
+- Extracts article title and main content
+- Pre-processes the DOM to rescue complex elements like `<pre>`, `<table>`, and `<details>` before Readability processing
+
+## 4. HTML → Markdown
+
+`turndown` configured for documentation-friendly output:
+
+- ATX-style headings (`# h1`, `## h2`)
+- Fenced code blocks with language tags
+- Preserved `language-*` classes on code blocks
+- Table support via GFM plugin
+- `<details>` and `<summary>` elements preserved
+
+## 5. Chunking
+
+**Recursive heading-based splitting** preserves document structure:
+
+1. Split on `# h1` → major sections
+2. Within h1, split on `## h2` → subsections
+3. Within h2, split on `### h3` → fine-grained sections
+4. If section exceeds max tokens → split on paragraphs
+5. **Never split mid-code-block** (atomic units)
+6. Heading hierarchy preserved as breadcrumbs: `"Getting Started > Installation"`
+7. Target: 500–1,500 tokens per chunk
+8. Minimum: 50 tokens (skip tiny fragments)
+
+## 6. Indexing
+
+- Insert chunks into SQLite `chunks` table
+- FTS5 index synced via database triggers
+- Library stats updated (page count, chunk count)
+
+## Dependencies
+
+| Package                | Purpose             | Size   |
+| ---------------------- | ------------------- | ------ |
+| `@mozilla/readability` | Content extraction  | ~40KB  |
+| `linkedom`             | DOM environment     | ~100KB |
+| `turndown`             | HTML → Markdown     | ~30KB  |
+| `robots-parser`        | robots.txt parsing  | ~5KB   |
+| `puppeteer-core`       | JS sites (optional) | ~2MB   |
+
+**Core footprint: ~375KB** — No LangChain, no heavy browser runtimes by default.

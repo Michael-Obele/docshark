@@ -1,76 +1,84 @@
 @import "tailwindcss";
 
 @import "tw-animate-css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource-variable/newsreader";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --background: oklch(0.984 0.006 95);
+  --foreground: oklch(0.23 0.025 248);
+  --card: oklch(0.995 0.004 95);
+  --card-foreground: oklch(0.23 0.025 248);
+  --popover: oklch(0.998 0.002 95);
+  --popover-foreground: oklch(0.23 0.025 248);
+  --primary: oklch(0.63 0.118 210);
+  --primary-foreground: oklch(0.98 0.003 95);
+  --secondary: oklch(0.95 0.012 90);
+  --secondary-foreground: oklch(0.28 0.024 248);
+  --muted: oklch(0.962 0.01 90);
+  --muted-foreground: oklch(0.5 0.026 245);
+  --accent: oklch(0.925 0.028 197);
+  --accent-foreground: oklch(0.25 0.042 220);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.88 0.014 85);
+  --input: oklch(0.9 0.014 85);
+  --ring: oklch(0.63 0.118 210);
+  --chart-1: oklch(0.63 0.118 210);
+  --chart-2: oklch(0.68 0.1 165);
+  --chart-3: oklch(0.55 0.08 245);
+  --chart-4: oklch(0.78 0.11 105);
+  --chart-5: oklch(0.58 0.09 280);
+  --sidebar: oklch(0.965 0.012 90);
+  --sidebar-foreground: oklch(0.24 0.024 248);
+  --sidebar-primary: oklch(0.63 0.118 210);
+  --sidebar-primary-foreground: oklch(0.98 0.003 95);
+  --sidebar-accent: oklch(0.93 0.026 197);
+  --sidebar-accent-foreground: oklch(0.25 0.042 220);
+  --sidebar-border: oklch(0.87 0.016 85);
+  --sidebar-ring: oklch(0.63 0.118 210);
+  --paper-shadow: 0 24px 80px oklch(0.27 0.03 248 / 0.08);
+  --surface-shadow: 0 12px 40px oklch(0.27 0.03 248 / 0.06);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  --background: oklch(0.18 0.024 252);
+  --foreground: oklch(0.95 0.01 105);
+  --card: oklch(0.22 0.026 252);
+  --card-foreground: oklch(0.95 0.01 105);
+  --popover: oklch(0.22 0.026 252);
+  --popover-foreground: oklch(0.95 0.01 105);
+  --primary: oklch(0.76 0.12 210);
+  --primary-foreground: oklch(0.16 0.02 252);
+  --secondary: oklch(0.28 0.025 252);
+  --secondary-foreground: oklch(0.93 0.01 105);
+  --muted: oklch(0.28 0.025 252);
+  --muted-foreground: oklch(0.72 0.02 105);
+  --accent: oklch(0.29 0.035 210);
+  --accent-foreground: oklch(0.94 0.01 105);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.76 0.12 210);
+  --chart-1: oklch(0.76 0.12 210);
+  --chart-2: oklch(0.73 0.1 170);
+  --chart-3: oklch(0.64 0.08 250);
+  --chart-4: oklch(0.8 0.12 120);
+  --chart-5: oklch(0.7 0.1 285);
+  --sidebar: oklch(0.15 0.022 252);
+  --sidebar-foreground: oklch(0.94 0.01 105);
+  --sidebar-primary: oklch(0.76 0.12 210);
+  --sidebar-primary-foreground: oklch(0.18 0.024 252);
+  --sidebar-accent: oklch(0.23 0.03 210);
+  --sidebar-accent-foreground: oklch(0.94 0.01 105);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: oklch(0.76 0.12 210);
+  --paper-shadow: 0 30px 100px oklch(0.04 0.01 252 / 0.4);
+  --surface-shadow: 0 18px 60px oklch(0.04 0.01 252 / 0.3);
 }
 
 @theme inline {
@@ -115,7 +123,181 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at top, oklch(0.76 0.08 210 / 0.14), transparent 35%),
+      linear-gradient(to bottom, transparent, oklch(0.67 0.03 95 / 0.06));
+    line-height: 1.65;
+    letter-spacing: -0.01em;
   }
+  body::selection {
+    background: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  }
+}
+
+.site-grid {
+  position: relative;
+  isolation: isolate;
+}
+
+.site-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(to right, transparent 0, transparent calc(50% - 1px), color-mix(in oklab, var(--border) 80%, transparent) calc(50% - 1px), color-mix(in oklab, var(--border) 80%, transparent) calc(50% + 1px), transparent calc(50% + 1px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 31px, color-mix(in oklab, var(--border) 65%, transparent) 32px);
+}
+
+.site-grid::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 28%);
+}
+
+.paper-panel {
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  box-shadow: var(--paper-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.soft-panel {
+  background: color-mix(in oklab, var(--card) 84%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.section-kicker {
+  color: color-mix(in oklab, var(--muted-foreground) 90%, var(--primary) 10%);
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.docs-prose :where(h1) {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: clamp(2.6rem, 5vw, 4.25rem);
+  line-height: 0.95;
+}
+
+.docs-prose :where(h2) {
+  margin-top: 3.75rem;
+  margin-bottom: 1rem;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1;
+}
+
+.docs-prose :where(h3) {
+  margin-top: 2.4rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.35rem;
+}
+
+.docs-prose :where(p, ul, ol, table, pre, blockquote) {
+  margin-top: 1.15rem;
+  margin-bottom: 1.15rem;
+}
+
+.docs-prose :where(> p:first-of-type) {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: color-mix(in oklab, var(--foreground) 85%, var(--muted-foreground) 15%);
+}
+
+.docs-prose :where(a) {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
+.docs-prose :where(a:hover) {
+  border-bottom-color: color-mix(in oklab, var(--primary) 70%, transparent);
+}
+
+.docs-prose :where(code:not(pre code)) {
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: color-mix(in oklab, var(--muted) 80%, transparent);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.86em;
+}
+
+.docs-prose :where(pre) {
+  overflow-x: auto;
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: color-mix(in oklab, var(--card) 80%, var(--background) 20%);
+  padding: 1.2rem 1.25rem;
+  box-shadow: var(--surface-shadow);
+}
+
+.docs-prose :where(table) {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  border-radius: 1.25rem;
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+}
+
+.docs-prose :where(th, td) {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 72%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-prose :where(th) {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--muted) 82%, transparent);
+}
+
+.docs-prose :where(blockquote) {
+  border-inline-start: 4px solid color-mix(in oklab, var(--primary) 80%, transparent);
+  padding: 0.2rem 0 0.2rem 1rem;
+  color: color-mix(in oklab, var(--foreground) 80%, var(--muted-foreground) 20%);
+}
+
+.docs-prose :where(hr) {
+  margin: 3rem 0;
+  border: 0;
+  border-top: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
 }

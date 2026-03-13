@@ -1,0 +1,86 @@
+---
+title: Introduction
+description: DocShark is a fast, local-first MCP server that scrapes, indexes, and serves documentation from any website.
+order: 1
+---
+
+<script lang="ts">
+	import Callout from "$lib/components/docs/callout.svelte";
+	import HighlightGrid from "$lib/components/docs/highlight-grid.svelte";
+
+	const introductionHighlights = [
+		{
+			title: "Single server model",
+			body: "Replace many per-library MCP servers with one local index and one tool surface.",
+		},
+		{
+			title: "Agent-first outputs",
+			body: "Results are chunked and formatted so coding assistants can act on them immediately.",
+		},
+		{
+			title: "Rendered docs support",
+			body: "Targets real documentation pages instead of only repository markdown.",
+		},
+		{
+			title: "Lightweight runtime",
+			body: "Bun + SQLite + FTS5 keeps the stack compact without cloud dependencies.",
+		},
+	];
+</script>
+
+# DocShark
+
+DocShark is a fast, local-first **Model Context Protocol (MCP) server** that scrapes, indexes, and serves documentation from any website. One package, unlimited doc sources, zero cloud dependency.
+
+<Callout title="Why this exists" label="Context" tone="note">
+	Teams often end up with many disconnected MCP integrations. DocShark centralizes
+	discovery, indexing, and retrieval so agents can work from a single source of truth.
+</Callout>
+
+## Why DocShark?
+
+AI coding assistants hallucinate documentation. Existing solutions all have gaps:
+
+| Solution             | What it does                      | Gap                                                 |
+| -------------------- | --------------------------------- | --------------------------------------------------- |
+| **Context7**         | Pulls docs from GitHub repos      | Gets source code, not rendered docs. Closed-source. |
+| **docs-mcp-server**  | Scrapes websites, indexes locally | Heavy deps (Playwright, LangChain, Node 22+).       |
+| **Per-library MCPs** | Serve one library each            | One MCP per library doesn't scale.                  |
+
+DocShark fills the gap: a **single, general-purpose MCP** that fetches docs from any website, stores them locally with zero-config search, and exposes them via the Model Context Protocol — all in one npm package.
+
+<HighlightGrid items={introductionHighlights} />
+
+## Key Features
+
+- **Any docs site** — Point DocShark at any URL and it crawls, extracts, and indexes the content
+- **SQLite + FTS5** — Blazing-fast full-text search with zero external dependencies
+- **Local-first** — Everything runs on your machine. No cloud, no API keys, no rate limits
+- **Smart chunking** — Heading-aware splitting preserves context and hierarchy
+- **MCP + CLI** — Full MCP server for AI assistants, plus a powerful command-line interface
+- **Lightweight** — ~375KB core footprint. No LangChain, no heavy browser deps by default
+
+## Quick Start
+
+```bash
+# Add documentation from any site
+npx docshark add https://svelte.dev/docs
+
+# Search across your indexed docs
+npx docshark search "runes reactivity"
+
+# Start the MCP server
+npx docshark start --stdio
+```
+
+## Tech Stack
+
+| Component           | Technology                 |
+| ------------------- | -------------------------- |
+| Runtime             | Bun                        |
+| MCP Server          | TMCP                       |
+| Database            | SQLite (bun:sqlite) + FTS5 |
+| Content Extraction  | Readability.js + linkedom  |
+| Markdown Conversion | Turndown + GFM plugin      |
+| Validation          | Valibot                    |
+| CLI                 | Commander.js               |
