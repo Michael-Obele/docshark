@@ -16,7 +16,7 @@ This document serves as your prime directive. You MUST adhere to these rules at 
 
 ## 🏗️ 2. Architectural Pillars
 DocShark relies on a specific internal pipeline. Understand these pillars before modifying code:
-1. **The CLI & MCP Frontends:** Entry points are `src/cli.ts` (Commander.js CLI) and `src/server.ts` (the JSON-RPC MCP server).
+1. **The CLI & MCP Frontends:** Entry points are `src/cli.ts` (cac CLI) and `src/server.ts` (the JSON-RPC MCP server).
 2. **The Worker Pipeline:** `src/jobs/worker.ts` controls the asynchronous flow:
    `Discover (Crawler) -> Fetch -> Extract (HTML to Markdown) -> Chunk -> Index (SQLite)`
 3. **The Data Layer:** `src/storage/db.ts` handles all SQLite persistence. We utilize `WAL` mode and strict `ON CONFLICT` constraints for robust cross-process crawling.

@@ -113,7 +113,7 @@ The CLI entry is `src/cli.ts` which is bundled into `dist/cli.js` for npm distri
 ```typescript
 #!/usr/bin/env node
 // src/cli.ts — DocShark CLI entry point
-import { Command } from "commander";
+import { cac } from "cac";
 import { startHttpServer } from "./http.js";
 import { VERSION } from "./version.js";
 

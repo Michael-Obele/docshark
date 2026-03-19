@@ -15,7 +15,7 @@ Complete code reference for building DocShark. Every module, every connection, e
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ CLI (src/cli.ts)   →   commander parses args                    │
+│ CLI (src/cli.ts)   →   cac parses args                         │
 │   ├── "start"      →   startServer()                            │
 │   │                      ├── new McpServer() (TMCP)              │
 │   │                      ├── register all 6 tools                │
@@ -206,7 +206,7 @@ function handleSSE(request: Request, eventBus: EventBus) {
 ```typescript
 // src/cli.ts
 #!/usr/bin/env node
-import { Command } from 'commander';
+import { cac } from 'cac';
 import { startHttpServer } from './http.js';
 import { StdioTransport } from '@tmcp/transport-stdio';
 import { server, db, searchEngine, libraryService } from './server.js';
@@ -993,7 +993,7 @@ docshark
 ├── linkedom                    # DOM for Readability
 ├── turndown                    # HTML → Markdown
 ├── cheerio                     # HTML parsing
-├── commander                   # CLI framework
+├── cac                         # CLI framework
 ├── nanoid                      # ID generation
 ├── robots-parser               # robots.txt
 └── (optional) puppeteer-core   # JS-rendered sites

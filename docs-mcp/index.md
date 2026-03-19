@@ -29,7 +29,7 @@ We need a **single, general-purpose MCP** that fetches docs from any website, st
 
 | Candidate    | `npx` Command  | Vibe                                         | Verdict                |
 | ------------ | -------------- | -------------------------------------------- | ---------------------- |
-| **docshark** | `npx docshark` | Aggressive, thorough crawling. Strong brand. | ✅ **Top pick**         |
+| **docshark** | `npx docshark` | Aggressive, thorough crawling. Strong brand. | ✅ **Top pick**        |
 | docfetch     | `npx docfetch` | Direct, obvious                              | Good backup            |
 | webdocs      | `npx webdocs`  | Clean, descriptive                           | Too generic            |
 | docsink      | `npx docsink`  | Docs "sink" into your index                  | "Sink" sounds negative |
@@ -109,7 +109,7 @@ Full analysis in [framework-comparison.md](./framework-comparison.md). Summary: 
 | HTML→Markdown   | `turndown`                                                      |
 | Database        | `better-sqlite3` + FTS5                                         |
 | Dashboard       | SvelteKit + Tailwind CSS + Shadcn Svelte (static adapter)       |
-| CLI             | `commander` or `citty`                                          |
+| CLI             | `cac` or `Clerc`                                                |
 | IDs             | `nanoid`                                                        |
 | Embeddings      | Optional: `openai` / `ollama` / `@ai-sdk/openai`                |
 
@@ -129,15 +129,19 @@ Full analysis in [framework-comparison.md](./framework-comparison.md). Summary: 
 ## Phases
 
 ### Phase 1: Core Engine (Week 1-2)
+
 Scaffold, storage, scraping, processing, MCP tools. Details in [todos.md](./todos.md).
 
 ### Phase 2: Dashboard (Week 3)
+
 SvelteKit dashboard with source management, search playground, crawl monitor. Details in [dashboard-spec.md](./dashboard-spec.md).
 
 ### Phase 3: Polish & Distribution (Week 4)
+
 CLI, npm publish, Docker, templates, config sharing. Details in [todos.md](./todos.md).
 
 ### Phase 4: Advanced Features (Week 5+)
+
 Vector embeddings, Playwright adapter, auto-detect deps, diff-aware crawling.
 
 ## Related Documents
@@ -159,10 +163,10 @@ Back to repository root: [../..](../../)
 
 ## Project Documentation
 
-*   **[Implementation Guide](./implementation-guide.md)** — Architectural plan and implementation details.
-*   **[Installation & Setup](./mcp-setup.md)** — How to use DocShark in your favorite AI client.
-*   **[Publishing Guide](./PUBLISHING.md)** — How to bundle and publish the npm package.
-*   **[Project Structure](./project-structure.md)** — Core folder layout and distribution options.
-*   **[Database Schema](./database-schema.md)** — SQLite tables and search indexing logic.
-*   **[Scraping Pipeline](./scraping-pipeline.md)** — The multi-tier discovery and extraction flow.
-*   **[Tools Specification](./tools-spec.md)** — Detailed definitions of the 6 MCP tools.
+- **[Implementation Guide](./implementation-guide.md)** — Architectural plan and implementation details.
+- **[Installation & Setup](./mcp-setup.md)** — How to use DocShark in your favorite AI client.
+- **[Publishing Guide](./PUBLISHING.md)** — How to bundle and publish the npm package.
+- **[Project Structure](./project-structure.md)** — Core folder layout and distribution options.
+- **[Database Schema](./database-schema.md)** — SQLite tables and search indexing logic.
+- **[Scraping Pipeline](./scraping-pipeline.md)** — The multi-tier discovery and extraction flow.
+- **[Tools Specification](./tools-spec.md)** — Detailed definitions of the 6 MCP tools.

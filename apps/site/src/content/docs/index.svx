@@ -83,4 +83,4 @@ bunx docshark start --stdio
 | Content Extraction  | Readability.js + linkedom  |
 | Markdown Conversion | Turndown + GFM plugin      |
 | Validation          | Valibot                    |
-| CLI                 | Commander.js               |
+| CLI                 | cac                        |

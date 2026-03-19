@@ -22,7 +22,7 @@ DocShark follows a layered architecture with clear separation between entry poin
 ```
 packages/core/
 ├── src/
-│   ├── cli.ts              # Commander.js CLI entry
+│   ├── cli.ts              # cac CLI entry
 │   ├── server.ts           # MCP server (JSON-RPC via TMCP)
 │   ├── http.ts             # HTTP server (REST + MCP transport)
 │   ├── types.ts            # Shared TypeScript types
@@ -69,7 +69,7 @@ packages/core/
 
 ### Entry Points
 
-- **CLI** (`cli.ts`) — Commander.js commands for `add`, `search`, `list`, `get`, `refresh`, `remove`, `start`
+- **CLI** (`cli.ts`) — cac commands for `add`, `search`, `list`, `get`, `refresh`, `remove`, `start`
 - **MCP Server** (`server.ts`) — JSON-RPC MCP server via TMCP, exposes 6 tools
 - **HTTP Server** (`http.ts`) — Bun.serve combining REST API + MCP transport
 
