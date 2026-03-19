@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.18](https://github.com/Michael-Obele/docshark/compare/v0.1.17...v0.1.18) (2026-03-19)
+
+
+### ✨ Features
+
+* update version to 0.1.17 and add version sync script ([9e1a3fe](https://github.com/Michael-Obele/docshark/commit/9e1a3feb6595d883035b7d6034ae860dc7cd746a))
+
+
+### 🐛 Bug Fixes
+
+* update CLI references from Commander.js to cac in documentation ([198f578](https://github.com/Michael-Obele/docshark/commit/198f5789d12e4243ad1cd6bc98249caa4b7c6356))
+
 ## [0.1.17](https://github.com/Michael-Obele/docshark/compare/v0.1.16...v0.1.17) (2026-03-19)
 
 
