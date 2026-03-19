@@ -43,6 +43,8 @@ jobs:
       - name: Build project
         if: ${{ steps.release.outputs.release_created }}
         working-directory: packages/core
+        env:
+          DOCSHARK_VERSION: ${{ steps.release.outputs.version }}
         run: bun run build
 
       - name: Publish to NPM with provenance
