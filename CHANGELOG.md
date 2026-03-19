@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.19](https://github.com/Michael-Obele/docshark/compare/v0.1.18...v0.1.19) (2026-03-19)
+
+
+### ✨ Features
+
+* add initial README.md with project overview and usage instructions ([9bde37f](https://github.com/Michael-Obele/docshark/commit/9bde37f1ce52d02243bb7504e4286f5a65d1eeed))
+* update README.md to enhance project description and development instructions ([eaeaf25](https://github.com/Michael-Obele/docshark/commit/eaeaf25771ef92d1b8b9a1c5fc30977d62fa8a95))
+
 ## [0.1.18](https://github.com/Michael-Obele/docshark/compare/v0.1.17...v0.1.18) (2026-03-19)
 
 
