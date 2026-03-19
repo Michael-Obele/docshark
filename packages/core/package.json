@@ -1,6 +1,6 @@
 {
   "name": "docshark",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "🦈 Documentation MCP Server — scrape, index, and search any doc website",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,7 +36,8 @@
     "dev": "bun run --watch src/cli.ts start",
     "cli": "bun run src/cli.ts",
     "check": "tsc --noEmit",
-    "build": "rm -rf dist && tsc && chmod +x dist/cli.js",
+    "sync:version": "bun run src/scripts/sync-version.ts",
+    "build": "bun run sync:version && rm -rf dist && tsc && chmod +x dist/cli.js",
     "prepublishOnly": "bun run build",
     "test:crawl": "bun run src/cli.ts add https://svelte.dev/docs/svelte/overview"
   },
