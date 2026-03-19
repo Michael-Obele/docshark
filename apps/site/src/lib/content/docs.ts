@@ -38,7 +38,7 @@ export const docs: Record<string, DocMeta> = {
     readingTime: "5 min read",
     highlights: [
       "Works with Claude Desktop, Cursor, and VS Code",
-      "Can be installed globally or run ad hoc with bunx or npx",
+      "Can be installed globally or run ad hoc with bunx",
       "Command-based MCP setup stays lightweight",
     ],
   },

@@ -25,14 +25,15 @@
       <lord-icon
         src="https://cdn.lordicon.com/gxajzyky.json"
         trigger="hover"
+        target="div"
         colors="primary:#4d8ddb,secondary:#f2f2f1"
         class="size-8"
         title="DocShark"
       >
       </lord-icon>
+      <p class="section-kicker mb-2">DocShark notebook</p>
     </a>
     <div class="px-1 pt-3">
-      <p class="section-kicker mb-2">DocShark notebook</p>
       <p class="text-sm leading-6 text-muted-foreground">
         Architecture notes, operational reference, and implementation guide.
       </p>

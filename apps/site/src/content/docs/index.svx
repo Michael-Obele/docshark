@@ -47,7 +47,7 @@ AI coding assistants hallucinate documentation. Existing solutions all have gaps
 | **docs-mcp-server**  | Scrapes websites, indexes locally | Heavy deps (Playwright, LangChain, Node 22+).       |
 | **Per-library MCPs** | Serve one library each            | One MCP per library doesn't scale.                  |
 
-DocShark fills the gap: a **single, general-purpose MCP** that fetches docs from any website, stores them locally with zero-config search, and exposes them via the Model Context Protocol — all in one npm package.
+DocShark fills the gap: a **single, general-purpose MCP** that fetches docs from any website, stores them locally with zero-config search, and exposes them via the Model Context Protocol — all in one Bun-installed package.
 
 <HighlightGrid items={introductionHighlights} />
 
@@ -64,13 +64,13 @@ DocShark fills the gap: a **single, general-purpose MCP** that fetches docs from
 
 ```bash
 # Add documentation from any site
-npx docshark add https://svelte.dev/docs
+bunx docshark add https://svelte.dev/docs
 
 # Search across your indexed docs
-npx docshark search "runes reactivity"
+bunx docshark search "runes reactivity"
 
 # Start the MCP server
-npx docshark start --stdio
+bunx docshark start --stdio
 ```
 
 ## Tech Stack

@@ -9,7 +9,7 @@
   import Search from "@lucide/svelte/icons/search";
   import Terminal from "@lucide/svelte/icons/terminal";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
-  import Package from "@lucide/svelte/icons/package";
+  import BookOpen from "@lucide/svelte/icons/book-open";
 
   const features = [
     {
@@ -40,13 +40,13 @@
       icon: Terminal,
       title: "MCP + CLI",
       description:
-        "Full Model Context Protocol server for AI assistants, plus a powerful CLI for managing your documentation library.",
+        "Full Model Context Protocol server for AI assistants, plus a Bun-first CLI for managing your documentation library.",
     },
     {
-      icon: Package,
-      title: "One Package",
+      icon: BookOpen,
+      title: "Docs-First Setup",
       description:
-        "Single npm package replaces dozens of per-library MCP servers. Add unlimited doc sources with one install.",
+        "Straightforward docs for Bun, bunx, Claude Desktop, Cursor, and VS Code keep setup predictable.",
     },
   ] as const;
 </script>
@@ -60,10 +60,10 @@
   <!-- Gradient background -->
   <div class="pointer-events-none absolute inset-0 -z-10">
     <div
-      class="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent"
+      class="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent"
     ></div>
     <div
-      class="absolute top-0 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-primary/5 blur-3xl"
+      class="absolute top-0 left-1/2 h-125 w-200 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl"
     ></div>
   </div>
 
@@ -79,7 +79,7 @@
       >
         Documentation for AI,
         <span
-          class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
+          class="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent"
         >
           served locally
         </span>
@@ -92,7 +92,7 @@
       </p>
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button size="lg" href="/docs" class="gap-2">
+        <Button size="lg" href="/docs/getting-started" class="gap-2">
           Get Started
           <ArrowRight class="size-4" />
         </Button>
@@ -115,7 +115,7 @@
           <div class="flex items-center gap-2 text-muted-foreground">
             <span class="select-none text-primary">$</span>
             <span class="text-foreground"
-              >npx docshark add https://svelte.dev/docs</span
+              >bunx docshark add https://svelte.dev/docs</span
             >
           </div>
         </div>
@@ -137,7 +137,7 @@
   </div>
 
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {#each features as feature}
+    {#each features as feature (feature.title)}
       <Card.Root
         class="border-border/50 bg-card/50 transition-colors hover:border-primary/30 hover:bg-card"
       >
@@ -183,7 +183,7 @@
       <div
         class="mt-4 w-full rounded-lg border border-border/60 bg-card p-3 text-left font-mono text-xs"
       >
-        <span class="text-primary">$</span> npx docshark add https://docs.example.com
+        <span class="text-primary">$</span> bunx docshark add https://docs.example.com
       </div>
     </div>
 
@@ -201,7 +201,7 @@
       <div
         class="mt-4 w-full rounded-lg border border-border/60 bg-card p-3 text-left font-mono text-xs"
       >
-        <span class="text-primary">$</span> npx docshark search "query syntax"
+        <span class="text-primary">$</span> bunx docshark search "query syntax"
       </div>
     </div>
 
@@ -220,7 +220,7 @@
         class="mt-4 w-full rounded-lg border border-border/60 bg-card p-3 text-left font-mono text-xs"
       >
         <span class="text-muted-foreground">// mcp config</span><br />
-        "command": "npx docshark serve"
+        "command": "bunx docshark start --stdio"
       </div>
     </div>
   </div>
@@ -239,18 +239,18 @@
       accounts.
     </p>
     <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-      <Button size="lg" href="/docs" class="gap-2">
+      <Button size="lg" href="/docs/getting-started" class="gap-2">
         Read the Docs
         <ArrowRight class="size-4" />
       </Button>
       <Button
         variant="outline"
         size="lg"
-        href="https://www.npmjs.com/package/docshark"
+        href="/docs/getting-started"
         class="gap-2"
       >
-        <Package class="size-4" />
-        npm install
+        <Terminal class="size-4" />
+        Bun install
       </Button>
     </div>
   </div>

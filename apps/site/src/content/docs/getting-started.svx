@@ -22,21 +22,20 @@ order: 2
 
 # Getting Started
 
-DocShark is available on npm and can be used as an MCP server across various AI clients.
+DocShark is installed with Bun and can be used as an MCP server across various AI clients.
 
 <Callout title="Recommended install path" label="Setup" tone="tip">
-  Use `bunx` or `npx` first while validating your workflow, then switch to a
-  global install only if your team benefits from shorter startup commands.
+  Use `bunx` for ad hoc runs. Switch to a global Bun install only if your team
+  benefits from a shorter command name.
 </Callout>
 
 ## Installation
 
 ```bash
 # Install globally (optional)
-npm install -g docshark
+bun add -g docshark
 
 # Or run on the fly
-npx docshark [command]
 bunx docshark [command]
 ```
 
@@ -88,19 +87,19 @@ Add to your workspace `.vscode/settings.json` or `.vscode/mcp.json`:
 
 ```bash
 # Add a documentation site
-npx docshark add https://svelte.dev/docs
+bunx docshark add https://svelte.dev/docs
 
 # List indexed libraries
-npx docshark list
+bunx docshark list
 
 # Search across all docs
-npx docshark search "component lifecycle"
+bunx docshark search "component lifecycle"
 
 # Search within a specific library
-npx docshark search "runes" --library svelte-dev
+bunx docshark search "runes" --library svelte-dev
 
 # Get a specific page
-npx docshark get svelte-dev /docs/svelte/overview
+bunx docshark get svelte-dev /docs/svelte/overview
 ```
 
 ## Available Tools
