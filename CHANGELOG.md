@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.20](https://github.com/Michael-Obele/docshark/compare/v0.1.19...v0.1.20) (2026-03-19)
+
+
+### ✨ Features
+
+* update version to 0.1.19 and sync versioning across files ([0fbe037](https://github.com/Michael-Obele/docshark/commit/0fbe037f86af6247ae47bd3301d5820dbb25d956))
+
 ## [0.1.19](https://github.com/Michael-Obele/docshark/compare/v0.1.18...v0.1.19) (2026-03-19)
 
 
