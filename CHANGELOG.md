@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16](https://github.com/Michael-Obele/docshark/compare/v0.1.15...v0.1.16) (2026-03-19)
+
+
+### ✨ Features
+
+* remove outdated design documents for CLI update, site redesign, and website repo strategy ([200c1cb](https://github.com/Michael-Obele/docshark/commit/200c1cb65eb099d6a79eaaf109191b017f6da2ee))
+
 ## [0.1.15](https://github.com/Michael-Obele/docshark/compare/v0.1.14...v0.1.15) (2026-03-19)
 
 
