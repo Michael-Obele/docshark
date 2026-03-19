@@ -1,6 +1,6 @@
 ---
 title: MCP Tools
-description: Complete specification of all 6 MCP tools that DocShark exposes to AI assistants.
+description: Complete specification of all 4 MCP tools that DocShark exposes to AI assistants.
 order: 3
 ---
 
@@ -10,7 +10,7 @@ order: 3
 
 # MCP Tools Specification
 
-DocShark exposes 6 MCP tools following the [Six-Tool Pattern](https://www.mcpbundles.com/blog/mcp-tool-design-pattern) and [MCP best practices](https://www.philschmid.de/mcp-best-practices).
+DocShark exposes 4 MCP tools following the [Six-Tool Pattern](https://www.mcpbundles.com/blog/mcp-tool-design-pattern) and [MCP best practices](https://www.philschmid.de/mcp-best-practices).
 
 <Callout title="Design intent" label="Agent UX" tone="note">
       The tool set is intentionally narrow. Fewer, purpose-specific tools reduce
@@ -22,7 +22,7 @@ DocShark exposes 6 MCP tools following the [Six-Tool Pattern](https://www.mcpbun
 1. **Tools are a UI for agents** — designed for how an LLM thinks, not a REST API wrapper
 2. **Descriptions are everything** — the LLM reads descriptions to decide when to use a tool
 3. **Pre-processed results** — formatted for LLM consumption, not raw data dumps
-4. **6 tools max** — avoids context rot with clear, non-overlapping purposes
+4. **Keep the set compact** — avoids context rot with clear, non-overlapping purposes
 5. **Idempotent reads** — search and list operations are safe to retry
 
 ## Tool Workflow
@@ -38,11 +38,13 @@ Agent needs documentation info
          ├── Library exists ──→ search_docs ──→ get_doc_page
          │                      (80% of usage)   (deep read)
          │
-         └── Not found ──────→ add_library
+         └── Not found ──────→ manage_library (action=add)
                                      │
-                               refresh_library  (update)
+                               manage_library (action=rename)
                                      │
-                               remove_library   (cleanup)
+                               manage_library (action=refresh)
+                                     │
+                               manage_library (action=remove)
 ```
 
 ## search_docs
@@ -100,29 +102,27 @@ Deep read. Retrieve full markdown content of a specific documentation page.
 | `library` | string | No       | Library name to search within      |
 | `path`    | string | No       | Relative path within the library   |
 
-## add_library
+## manage_library
 
-Add a new documentation website to be crawled and indexed.
+Manage an existing documentation library or add a new one.
 
-| Parameter   | Type   | Required | Description                                  |
-| ----------- | ------ | -------- | -------------------------------------------- |
-| `url`       | string | Yes      | Base URL of the docs site                    |
-| `name`      | string | No       | Short identifier (auto-generated if omitted) |
-| `version`   | string | No       | Version string (e.g., "5.0.0")               |
-| `max_depth` | number | No       | Max crawl depth (1-10, default: 3)           |
+| Action    | Purpose                                         |
+| --------- | ----------------------------------------------- |
+| `add`     | Crawl and index a new documentation website     |
+| `rename`  | Change the stored and display name of a library |
+| `refresh` | Re-crawl an existing library for updates        |
+| `remove`  | Delete a library and all indexed content        |
+| `info`    | Inspect stats and indexed pages for a library   |
 
-## refresh_library
+| Parameter      | Type   | Required | Description                                         |
+| -------------- | ------ | -------- | --------------------------------------------------- |
+| `action`       | string | Yes      | One of `add`, `rename`, `refresh`, `remove`, `info` |
+| `url`          | string | No       | Base URL of the docs site for `add`                 |
+| `name`         | string | No       | Short identifier for `add`                          |
+| `version`      | string | No       | Version string for `add`                            |
+| `max_depth`    | number | No       | Max crawl depth for `add`                           |
+| `current_name` | string | No       | Existing library name for `rename`                  |
+| `new_name`     | string | No       | Replacement library name for `rename`               |
+| `library`      | string | No       | Library name for `refresh`, `remove`, or `info`     |
 
-Re-crawl an existing library to get the latest documentation. Only re-fetches pages that have changed via HTTP ETags/Last-Modified.
-
-| Parameter | Type   | Required | Description             |
-| --------- | ------ | -------- | ----------------------- |
-| `library` | string | Yes      | Library name to refresh |
-
-## remove_library
-
-Permanently remove a documentation library and all its indexed content.
-
-| Parameter | Type   | Required | Description            |
-| --------- | ------ | -------- | ---------------------- |
-| `library` | string | Yes      | Library name to remove |
+Use `action=add` to create a new library, `action=rename` to retitle an existing one, `action=refresh` to re-crawl, `action=remove` to delete a library, and `action=info` to inspect its pages and stats.

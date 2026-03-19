@@ -30,8 +30,8 @@
 - ✅ Heading-based semantic chunker (500-1200 tokens per chunk).
 - ✅ Asynchronous job manager and queue system.
 - ✅ Complete HTTP API (REST endpoints + SSE event streams).
-- ✅ Seamless integration of 6 MCP tools: `add_library`, `search_docs`, `list_libraries`, `get_doc_page`, `refresh_library`, and `remove_library`.
-- ✅ Robust CLI interface (`start`, `add`, `search`, `list`).
+- ✅ Seamless integration of 4 MCP tools: `manage_library`, `search_docs`, `list_libraries`, and `get_doc_page`.
+- ✅ Robust CLI interface (`start`, `add`, `rename`, `search`, `list`).
 
 ## 🏗️ What We Are Doing
 

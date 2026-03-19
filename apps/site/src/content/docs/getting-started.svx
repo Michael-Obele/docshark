@@ -106,11 +106,9 @@ bunx docshark get svelte-dev /docs/svelte/overview
 
 Once connected as an MCP server, DocShark exposes these tools to your AI assistant:
 
-| Tool              | Action                     | Parameters                  |
-| ----------------- | -------------------------- | --------------------------- |
-| `add_library`     | Index a documentation site | `url`, `name`, `maxDepth`   |
-| `search_docs`     | Search indexed docs        | `query`, `library`, `limit` |
-| `list_libraries`  | List all indexed libraries | —                           |
-| `get_doc_page`    | Read a specific page       | `library`, `path`           |
-| `refresh_library` | Re-crawl for updates       | `library`                   |
-| `remove_library`  | Delete an indexed library  | `library`                   |
+| Tool             | Action                                | Parameters                                                                             |
+| ---------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `manage_library` | Add, rename, refresh, remove, inspect | `action`, `url`, `name`, `version`, `max_depth`, `current_name`, `new_name`, `library` |
+| `search_docs`    | Search indexed docs                   | `query`, `library`, `limit`                                                            |
+| `list_libraries` | List all indexed libraries            | `status`                                                                               |
+| `get_doc_page`   | Read a specific page                  | `url`, `library`, `path`                                                               |
