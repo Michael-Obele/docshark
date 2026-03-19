@@ -1,42 +1,80 @@
-# sv
+# DocShark Site
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This package contains the public DocShark website: a SvelteKit + mdsvex frontend for the project docs, onboarding flow, and product overview.
 
-## Creating a project
+The site is part of the DocShark monorepo and is built to present the core project in a clear, search-friendly format. It is not the MCP server itself. The actual engine, CLI, and MCP tools live under `packages/core`.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## What this site includes
 
-```sh
-# create a new project
-npx sv create my-app
+- A marketing-style homepage with project positioning and quick entry points
+- A documentation section driven by mdsvex content files
+- Responsive navigation, theme switching, and shared UI components
+- Netlify deployment via the SvelteKit adapter
+
+## Documentation structure
+
+Docs content lives in `src/content/docs` and is wired into the navigation from `src/lib/content/docs.ts`.
+
+Current docs pages:
+
+- `Introduction`
+- `Getting Started`
+- `MCP Tools`
+- `Scraping Pipeline`
+- `Database Schema`
+- `Project Structure`
+
+The rendered routes are grouped under `/docs`, with the landing page at `/`.
+
+## Development
+
+Install dependencies from the repository root, then run the site with the workspace scripts:
+
+```bash
+pnpm install
+pnpm dev:site
 ```
 
-To recreate this project with the same configuration:
+If you prefer working inside this package directly, the local scripts are:
 
-```sh
-# recreate this project
-npx sv@0.12.6 create --template minimal --types ts --add tailwindcss="plugins:typography" --no-install site
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+npm run build
+npm run preview
+npm run check
 ```
 
-## Building
+## Build
 
-To create a production version of your app:
+Create a production build with:
 
-```sh
+```bash
+pnpm build:site
+```
+
+or from inside `apps/site`:
+
+```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+The production output is configured for Netlify and written to `build`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Content editing
+
+- Update page copy in `src/content/docs/*.svx`
+- Update doc metadata and sidebar order in `src/lib/content/docs.ts`
+- Update the homepage in `src/routes/+page.svelte`
+- Update shared layout, fonts, and metadata in `src/routes/+layout.svelte`
+
+## Deployment
+
+The site uses `@sveltejs/adapter-netlify` and is configured through `netlify.toml`.
+
+When deploying from the monorepo, make sure the site build command is `pnpm build:site` and the publish directory is `apps/site/build`.
+
+## Related project areas
+
+- Core engine and MCP server: `packages/core`
+- Project-wide scripts: root `package.json`
+- Full project documentation: `docs-mcp`
