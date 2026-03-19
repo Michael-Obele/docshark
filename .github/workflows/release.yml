@@ -17,8 +17,8 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          config-file: packages/core/release-please-config.json
+          manifest-file: packages/core/.release-please-manifest.json
 
       - name: Checkout repository
         if: ${{ steps.release.outputs.release_created }}
@@ -34,15 +34,18 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-          
+
       - name: Install dependencies
         if: ${{ steps.release.outputs.release_created }}
+        working-directory: packages/core
         run: bun install
-        
+
       - name: Build project
         if: ${{ steps.release.outputs.release_created }}
+        working-directory: packages/core
         run: bun run build
-        
+
       - name: Publish to NPM with provenance
         if: ${{ steps.release.outputs.release_created }}
+        working-directory: packages/core
         run: npm publish --provenance --access public
