@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.15](https://github.com/Michael-Obele/docshark/compare/v0.1.14...v0.1.15) (2026-03-19)
+
+
+### ✨ Features
+
+* add Netlify configuration for build process ([16639fa](https://github.com/Michael-Obele/docshark/commit/16639fa24073a44a7cba0bb14e7d2066901a986a))
+* add sitemap route for dynamic XML generation of site URLs ([6221746](https://github.com/Michael-Obele/docshark/commit/6221746c417f03746e28d3bb28763a581557de2d))
+* add Vite plugin inspector configuration for enhanced debugging ([180ec80](https://github.com/Michael-Obele/docshark/commit/180ec80e90f6b545f3e11d0e977d39d981891d04))
+* update installation instructions to prioritize Bun and improve documentation clarity ([c848a69](https://github.com/Michael-Obele/docshark/commit/c848a691ef52346ddac38e589872aef776251d53))
+
 ## [0.1.14](https://github.com/Michael-Obele/docshark/compare/v0.1.13...v0.1.14) (2026-03-19)
 
 
