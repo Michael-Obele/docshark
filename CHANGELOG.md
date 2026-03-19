@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17](https://github.com/Michael-Obele/docshark/compare/v0.1.16...v0.1.17) (2026-03-19)
+
+
+### ✨ Features
+
+* update version to 0.1.16 and refactor version retrieval logic ([0b7ca33](https://github.com/Michael-Obele/docshark/commit/0b7ca3307da4c0a80a950a15306192335ee43050))
+
 ## [0.1.16](https://github.com/Michael-Obele/docshark/compare/v0.1.15...v0.1.16) (2026-03-19)
 
 
