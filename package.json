@@ -11,5 +11,6 @@
     "build:core": "cd packages/core && bun run build",
     "check:core": "bunx tsc --noEmit -p packages/core/tsconfig.json",
     "check": "pnpm check:core && pnpm check:site"
-  }
+  },
+  "version": "0.1.14"
 }
