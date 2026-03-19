@@ -1,0 +1,4 @@
+[build]
+base = "apps/site"
+command = "bun run build"
+publish = "build"
