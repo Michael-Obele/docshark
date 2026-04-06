@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.21](https://github.com/Michael-Obele/docshark/compare/v0.1.20...v0.1.21) (2026-04-06)
+
+
+### ✨ Features
+
+* add documentation and query patterns for DocShark skill ([40c708d](https://github.com/Michael-Obele/docshark/commit/40c708df62688c8cb7314173154db1d7164559ee))
+* add initial DocShark Search Evolution Plan document ([513b415](https://github.com/Michael-Obele/docshark/commit/513b41501094ec1e32352b1952aab647ec07116e))
+* add validation and implementation notes for Phase 1 of search evolution plan ([de4d44b](https://github.com/Michael-Obele/docshark/commit/de4d44bc7c7ab0d93f4880b9e76d74a50debfa56))
+* implement search result formatting and query planning in SearchEngine ([7ae5685](https://github.com/Michael-Obele/docshark/commit/7ae5685d29af5c332d50ad14f872c6a35a7219bc))
+
+
+### ♻️ Code Refactoring
+
+* improve code formatting and consistency in RateLimiter class ([65ce46e](https://github.com/Michael-Obele/docshark/commit/65ce46ed478f72b7711e805cde6f4e1db93c30c6))
+
 ## [0.1.20](https://github.com/Michael-Obele/docshark/compare/v0.1.19...v0.1.20) (2026-03-19)
 
 
