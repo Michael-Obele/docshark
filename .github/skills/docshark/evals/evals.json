@@ -1,0 +1,23 @@
+{
+  "skill_name": "docshark",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "DocShark is available. Find how SvelteKit handles form actions with redirects. If the right docs are indexed, use DocShark to answer from the docs rather than memory.",
+      "expected_output": "The agent checks available libraries when needed, uses search_docs with a natural-language query, and escalates to get_doc_page only if the snippet is insufficient.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use DocShark to tell me whether Better Auth documentation is indexed. If it is missing, start indexing it and explain what happens next.",
+      "expected_output": "The agent uses list_libraries first, then manage_library with action=add if Better Auth is not indexed, and communicates crawl status clearly.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Search the indexed docs for TanStack Query cache invalidation guidance. If the first search is ambiguous, refine it instead of guessing.",
+      "expected_output": "The agent uses search_docs with a natural-language query, avoids premature full-page reads, and refines the search or adds a library filter only after discovery.",
+      "files": []
+    }
+  ]
+}
