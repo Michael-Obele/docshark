@@ -1138,3 +1138,49 @@ If the question is “what should DocShark build next for search?”, the answer
 - **not yet**: native vector extensions or a separate search service
 
 That path is the highest-quality fit for this repository.
+
+---
+
+## 15. Validation And Implementation Notes
+
+### 15.1 Document-Based Checkpoints
+
+This section is intentionally based on the design document itself, not on external research results. The plan assumes the following architecture already in scope:
+
+- the CLI, MCP server, and HTTP API all share the same search core
+- Phase 1 stays lexical and local-first
+- FTS5 remains the index backbone
+- ranking is improved by query planning and reranking rather than by a new storage layer
+
+### 15.2 Phase 1 Implementation Adjustment
+
+The original design mentioned possible new page metadata columns such as `path_type`, `version_tag`, `is_canonical`, and `title_normalized`.
+
+The first implementation deliberately defers those schema changes.
+
+Instead, Phase 1 computes the following at query time:
+
+- query intent
+- path type heuristics
+- version tags from URL paths
+- canonical page grouping for duplicate collapse
+- reason strings for AI-oriented result output
+
+This keeps the first release of Option 1 low-risk:
+
+- no database migration required
+- no index rebuild required
+- no CLI or MCP contract breakage required
+- ranking quality improves immediately on existing indexed libraries
+
+### 15.3 What Phase 1 Means In Practice
+
+The Phase 1 search shape is:
+
+1. plan the query
+2. fetch a broader FTS5 candidate set
+3. rerank with title, heading, path, phrase, code, and version signals
+4. collapse duplicate pages and duplicate version families
+5. return results with short ranking rationales
+
+That is the minimal local-first implementation described by this document.
