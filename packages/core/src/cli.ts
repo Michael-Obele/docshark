@@ -5,6 +5,7 @@ import { startHttpServer } from "./http.js";
 import { StdioTransport } from "@tmcp/transport-stdio";
 import { server, db, searchEngine, libraryService } from "./server.js";
 import { maybeNotifyAboutUpdate, runUpdateCommand } from "./cli-update.js";
+import { formatSearchResults } from "./search/format-results.js";
 import { VERSION } from "./version.js";
 
 const useColor = process.stdout.isTTY;
@@ -190,12 +191,7 @@ cli
       return;
     }
 
-    for (const r of results) {
-      console.log(`\n--- ${r.page_title} (${r.library_display_name}) ---`);
-      console.log(`Section: ${r.heading_context}`);
-      console.log(r.content.slice(0, 300));
-      console.log(`Source: ${r.page_url}\n`);
-    }
+    console.log(`\n${formatSearchResults(query, results)}\n`);
   });
 
 cli

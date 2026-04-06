@@ -5,6 +5,7 @@ import * as v from "valibot";
 import { tool } from "tmcp/utils";
 import { Database } from "./storage/db.js";
 import { SearchEngine } from "./storage/search.js";
+import { formatSearchResults } from "./search/format-results.js";
 import { LibraryService } from "./services/library.js";
 import { JobManager } from "./jobs/manager.js";
 import { VERSION } from "./version.js";
@@ -64,17 +65,7 @@ server.tool(
     if (results.length === 0)
       return tool.text(`No results found for "${query}".`);
 
-    const formatted = results
-      .map((r, i) => {
-        let block = `### ${i + 1}. ${r.page_title} — ${r.library_display_name}\n`;
-        block += `**Source:** ${r.page_url}\n`;
-        block += `**Section:** ${r.heading_context}\n\n`;
-        block += r.content;
-        return block;
-      })
-      .join("\n\n---\n\n");
-
-    return tool.text(`## Results for "${query}"\n\n${formatted}`);
+    return tool.text(formatSearchResults(query, results));
   },
 );
 
