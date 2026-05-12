@@ -1,6 +1,6 @@
 ---
 name: docshark
-description: Use when a task needs documentation lookup through a DocShark MCP server, including discovering indexed libraries, searching framework or API docs, reading full documentation pages, or handling missing or stale libraries.
+description: "Search, discover, and manage documentation through a local DocShark MCP server. Use this skill when you need grounded documentation lookup for any framework, library, API, or tool—including discovering what's indexed, searching natural-language queries, reading full pages, and managing missing or stale libraries. ALWAYS use this skill when the user asks about framework/library/API documentation and DocShark is available as an MCP tool."
 ---
 
 # Using DocShark
