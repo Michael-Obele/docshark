@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.22](https://github.com/Michael-Obele/docshark/compare/v0.1.21...v0.1.22) (2026-05-13)
+
+
+### 🧹 Chores & Maintenance
+
+* update version to 0.1.21 in package.json ([99c5bc5](https://github.com/Michael-Obele/docshark/commit/99c5bc5191a70cc739fa1bed6fd9341e86adc78d))
+
 ## [0.1.21](https://github.com/Michael-Obele/docshark/compare/v0.1.20...v0.1.21) (2026-05-13)
 
 
