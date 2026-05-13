@@ -1,4 +1,5 @@
 import type { SearchResult } from './types.js';
+import { sanitizeDocContent } from './sanitize.js';
 
 function formatReasons(reasons: string[]): string {
   if (reasons.length === 0) {
@@ -16,7 +17,9 @@ export function formatSearchResults(query: string, results: SearchResult[]): str
       if (result.heading_context.trim().length > 0) {
         block += `**Section:** ${result.heading_context}\n`;
       }
-      block += `${formatReasons(result.reasons)}${result.content}`;
+      // Sanitize content to prevent prompt injection
+      const sanitizedContent = sanitizeDocContent(result.content);
+      block += `${formatReasons(result.reasons)}${sanitizedContent}`;
       return block;
     })
     .join('\n\n---\n\n');

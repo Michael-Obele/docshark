@@ -104,6 +104,7 @@ export class Database {
       CREATE TABLE IF NOT EXISTS crawl_jobs (
         id               TEXT PRIMARY KEY,
         library_id       TEXT NOT NULL REFERENCES libraries(id) ON DELETE CASCADE,
+        session_id       TEXT,
         status           TEXT NOT NULL DEFAULT 'queued',
         pages_discovered INTEGER NOT NULL DEFAULT 0,
         pages_crawled    INTEGER NOT NULL DEFAULT 0,
@@ -316,10 +317,10 @@ export class Database {
   // Crawl Jobs
   // ──────────────────────────────────────
 
-  createJob(job: { id: string; libraryId: string }): CrawlJob {
+  createJob(job: { id: string; libraryId: string; sessionId?: string }): CrawlJob {
     this.db
-      .prepare("INSERT INTO crawl_jobs (id, library_id) VALUES (?, ?)")
-      .run(job.id, job.libraryId);
+      .prepare("INSERT INTO crawl_jobs (id, library_id, session_id) VALUES (?, ?, ?)")
+      .run(job.id, job.libraryId, job.sessionId ?? null);
     return this.db
       .prepare("SELECT * FROM crawl_jobs WHERE id = ?")
       .get(job.id) as CrawlJob;

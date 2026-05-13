@@ -42,10 +42,11 @@ server.tool(
   {
     name: "search_docs",
     description:
-      "Search through indexed documentation libraries for relevant information. " +
-      "Returns ranked documentation sections with code examples and source URLs. " +
-      "Use this when you need to find information about a library, framework, API, " +
-      "or any technical concept.",
+      "Search indexed docs by keyword or library. Returns ranked sections with URLs.",
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
     schema: v.object({
       query: v.pipe(
         v.string(),
@@ -61,11 +62,16 @@ server.tool(
     }),
   },
   async ({ query, library, limit }) => {
-    const results = searchEngine.search(query, { library, limit });
-    if (results.length === 0)
-      return tool.text(`No results found for "${query}".`);
+    try {
+      const results = searchEngine.search(query, { library, limit });
+      if (results.length === 0)
+        return tool.text(`No results found for "${query}".`);
 
-    return tool.text(formatSearchResults(query, results));
+      return tool.text(formatSearchResults(query, results));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Search failed";
+      return tool.text(`❌ Error: ${message}`);
+    }
   },
 );
 
@@ -108,14 +114,16 @@ function formatLibraryInfo(libraryId: string): string {
 }
 
 // ──────────────────────────────────────
-// Tool 2: list_libraries — Discovery tool
+// Tool 2: list_libraries — Discovery tool with pagination
 // ──────────────────────────────────────
 server.tool(
   {
     name: "list_libraries",
-    description:
-      "List all documentation libraries currently indexed and available for searching. " +
-      "Use this to discover what docs are available before running search_docs.",
+    description: "List indexed documentation libraries. Paginated results.",
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
     schema: v.object({
       status: v.optional(
         v.pipe(
@@ -124,23 +132,46 @@ server.tool(
         ),
         "all",
       ),
+      page: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1)), 1),
+      limit: v.optional(
+        v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50)),
+        20,
+      ),
     }),
   },
-  async ({ status }) => {
-    const libraries = db.listLibraries(status);
-    if (libraries.length === 0) {
-      return tool.text(
-        "No libraries indexed yet. Use manage_library with action=add to add a documentation website.",
-      );
-    }
+  async ({ status, page = 1, limit = 20 }) => {
+    try {
+      const libraries = db.listLibraries(status);
+      if (libraries.length === 0) {
+        return tool.text(
+          "No libraries indexed yet. Use manage_library with action=add to add a documentation website.",
+        );
+      }
 
-    let output = `## Indexed Libraries (${libraries.length} total)\n\n`;
-    output += "| Library | URL | Pages | Chunks | Status |\n";
-    output += "| ------- | --- | ----- | ------ | ------ |\n";
-    for (const lib of libraries) {
-      output += `| ${lib.name} | ${lib.url} | ${lib.page_count} | ${lib.chunk_count} | ${lib.status} |\n`;
+      // Paginate results
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      const paginated = libraries.slice(start, end);
+      const hasMore = end < libraries.length;
+
+      // Minified response (no pretty-printing)
+      let output = `## Libraries (${start + 1}-${Math.min(end, libraries.length)} of ${libraries.length})\n\n`;
+      output += "| Library | URL | Pages | Chunks | Status |\n";
+      output += "| ------- | --- | ----- | ------ | ------ |\n";
+      for (const lib of paginated) {
+        output += `|${lib.name}|${lib.url}|${lib.page_count}|${lib.chunk_count}|${lib.status}|\n`;
+      }
+
+      if (hasMore) {
+        output += `\n**More available.** Use page=${page + 1} to fetch next page.`;
+      }
+
+      return tool.text(output);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to list libraries";
+      return tool.text(`❌ Error: ${message}`);
     }
-    return tool.text(output);
   },
 );
 
@@ -150,9 +181,11 @@ server.tool(
 server.tool(
   {
     name: "get_doc_page",
-    description:
-      "Retrieve the complete content of a specific documentation page as markdown. " +
-      "Use when search results reference a page and you need full context.",
+    description: "Retrieve complete documentation page as markdown.",
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
     schema: v.object({
       url: v.optional(
         v.pipe(
@@ -169,14 +202,20 @@ server.tool(
     }),
   },
   async ({ url, library, path }) => {
-    const page = db.getPage({ url, library, path });
-    if (!page)
+    try {
+      const page = db.getPage({ url, library, path });
+      if (!page)
+        return tool.text(
+          "Page not found. Use search_docs to find the correct page.",
+        );
       return tool.text(
-        "Page not found. Use search_docs to find the correct page.",
+        `# ${page.title}\n**Source:** ${page.url}\n\n${page.content_markdown}`,
       );
-    return tool.text(
-      `# ${page.title}\n**Source:** ${page.url}\n\n${page.content_markdown}`,
-    );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch page";
+      return tool.text(`❌ Error: ${message}`);
+    }
   },
 );
 
@@ -187,7 +226,10 @@ server.tool(
   {
     name: "manage_library",
     description:
-      "Manage a documentation library lifecycle. Use action=add to crawl a new source, action=rename to change the library name, action=refresh to re-crawl, action=remove to delete it, or action=info to inspect its pages and stats.",
+      "Manage library lifecycle: add/rename/refresh/remove/info. Destructive actions require confirmation.",
+    annotations: {
+      destructiveHint: true,
+    },
     schema: v.object({
       action: v.pipe(
         v.picklist(["add", "rename", "refresh", "remove", "info"]),
@@ -268,7 +310,7 @@ server.tool(
           const lib = db.getLibraryByName(libraryName);
           if (!lib)
             return tool.text(
-              `Library "${libraryName}" not found. Use list_libraries to see available.`,
+              `❌ Library "${libraryName}" not found. Use list_libraries to see available.`,
             );
 
           const job = jobManager.startCrawl(lib.id, { incremental: true });
@@ -282,7 +324,7 @@ server.tool(
             "library is required for action=remove.",
           );
           const lib = db.getLibraryByName(libraryName);
-          if (!lib) return tool.text(`Library "${libraryName}" not found.`);
+          if (!lib) return tool.text(`❌ Library "${libraryName}" not found.`);
 
           db.removeLibrary(lib.id);
           return tool.text(
@@ -297,7 +339,7 @@ server.tool(
           const lib = db.getLibraryByName(libraryName);
           if (!lib)
             return tool.text(
-              `Library "${libraryName}" not found. Use list_libraries to see available libraries.`,
+              `❌ Library "${libraryName}" not found. Use list_libraries to see available libraries.`,
             );
 
           return tool.text(formatLibraryInfo(lib.id));
@@ -305,9 +347,9 @@ server.tool(
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      return tool.text(`❌ Failed: ${message}`);
+      return tool.text(`❌ Error: ${message}`);
     }
 
-    return tool.text(`❌ Failed: Unsupported action.`);
+    return tool.text(`❌ Error: Unsupported action.`);
   },
 );

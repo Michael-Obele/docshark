@@ -47,6 +47,7 @@ export interface ChunkRecord {
 export interface CrawlJob {
     id: string;
     library_id: string;
+    session_id?: string;
     status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
     pages_discovered: number;
     pages_crawled: number;

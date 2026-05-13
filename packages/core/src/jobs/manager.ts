@@ -14,9 +14,9 @@ export class JobManager {
     ) { }
 
     /** Start a crawl job for a library */
-    startCrawl(libraryId: string, opts?: { incremental?: boolean }): CrawlJob {
+    startCrawl(libraryId: string, opts?: { incremental?: boolean; sessionId?: string }): CrawlJob {
         const jobId = nanoid();
-        const job = this.db.createJob({ id: jobId, libraryId });
+        const job = this.db.createJob({ id: jobId, libraryId, sessionId: opts?.sessionId });
 
         // Run crawl async (non-blocking)
         const worker = new CrawlWorker(this.db, this.eventBus);
