@@ -1,34 +1,52 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["src/cli.ts", "src/server.ts", "src/index.ts"],
+  "entry": [
+    "packages/core/src/cli.ts",
+    "packages/core/src/server.ts",
+    "packages/core/src/index.ts",
+    "apps/site/src/routes/**/*.svelte",
+    "apps/site/src/lib/index.ts"
+  ],
   "ignorePatterns": [
     "dist/**",
     "build/**",
+    ".svelte-kit/**",
     "**/*.d.ts",
     "**/node_modules/**",
     "**/__tests__/**",
-    "**/*.test.ts",
-    "**/*.spec.ts",
+    "**/*.test.{ts,js}",
+    "**/*.spec.{ts,js}",
     "coverage/**",
     ".next/**",
-    "out/**"
+    "out/**",
+    "**/.fallow/**",
+    ".github/**",
+    "docs-mcp/**"
   ],
   "ignoreDependencies": ["@types/**"],
   "ignoreExportsUsedInFile": true,
-  "publicPackages": ["docshark"],
-  "dynamicallyLoaded": ["src/tools/**/*.ts"],
+  "publicPackages": ["docshark", "docshark-site"],
+  "dynamicallyLoaded": ["packages/core/src/tools/**/*.ts"],
   "duplicates": {
     "mode": "mild",
     "minTokens": 50,
     "minLines": 5,
     "minOccurrences": 3,
-    "ignore": ["src/processor/**", "src/scraper/**"]
+    "ignore": [
+      "packages/core/src/processor/**",
+      "packages/core/src/scraper/**",
+      "apps/site/src/components/**",
+      "apps/site/src/lib/components/**"
+    ]
   },
   "health": {
     "maxCyclomatic": 15,
     "maxCognitive": 12,
     "maxCrap": 25,
-    "ignore": ["src/processor/extractor.ts", "src/search/**"]
+    "ignore": [
+      "packages/core/src/processor/extractor.ts",
+      "packages/core/src/search/**"
+    ]
   },
   "rules": {
     "unused-files": "error",
