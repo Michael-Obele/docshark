@@ -12,6 +12,10 @@
     "build/**",
     ".svelte-kit/**",
     "**/*.d.ts",
+    "packages/core/src/processor/**",
+    "packages/core/src/scraper/**",
+    "apps/site/src/components/**",
+    "apps/site/src/lib/components/**",
     "**/node_modules/**",
     "**/__tests__/**",
     "**/*.test.{ts,js}",
@@ -21,7 +25,8 @@
     "out/**",
     "**/.fallow/**",
     ".github/**",
-    "docs-mcp/**"
+    "docs-mcp/**",
+    "research/**"
   ],
   "ignoreDependencies": ["@types/**"],
   "ignoreExportsUsedInFile": true,
@@ -45,7 +50,8 @@
     "maxCrap": 25,
     "ignore": [
       "packages/core/src/processor/extractor.ts",
-      "packages/core/src/search/**"
+      "packages/core/src/search/**",
+      "apps/site/src/routes/**"
     ]
   },
   "rules": {
