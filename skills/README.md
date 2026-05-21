@@ -5,22 +5,25 @@ This directory contains reusable Agent Skills for the DocShark documentation ind
 ## Available Skills
 
 ### 1. `docshark`
+
 **Search and manage documentation through DocShark MCP server**
 
 - **Purpose**: Documentation lookup, discovery, and library management
 - **Triggers**: Framework/library/API documentation questions, search, page retrieval
-- **Tools Used**: `list_libraries`, `search_docs`, `get_doc_page`, `manage_library`
+- **Tools Used**: `list_libraries`, `search_docs`, `get_doc_page`, `add_library`, `refresh_library`, `remove_library`
 - **When to Use**:
   - User asks about any framework, library, or API documentation
   - Search results need full-page context
   - Documentation sources need to be added, refreshed, or removed
 
 **Files**:
+
 - `docshark/SKILL.md` — Decision flow, patterns, examples
 - `docshark/evals/` — Test cases for evaluation
 - `docshark/references/` — Additional guidance (optional)
 
 ### 2. `using-docshark`
+
 **Set up, configure, and integrate DocShark locally**
 
 - **Purpose**: Installation, configuration, integration, and troubleshooting
@@ -32,14 +35,39 @@ This directory contains reusable Agent Skills for the DocShark documentation ind
   - Troubleshooting crawling, search, or memory issues
 
 **Files**:
+
 - `using-docshark/SKILL.md` — Setup guide, config, troubleshooting
 - `using-docshark/evals/` — Test cases
 - `using-docshark/references/` — Additional setup guides
 
+## Installation
+
+You can install these skills directly into your AI coding assistant using the [skills.sh](https://skills.sh) CLI:
+
+```bash
+# Install the docshark tool usage skill
+npx skills add Michael-Obele/docshark --skill docshark
+
+# Install the docshark setup and config skill
+npx skills add Michael-Obele/docshark --skill using-docshark
+```
+
+### Installation by Code Editor
+
+The `npx skills add` command automatically detects your environment, but here is where the skills are stored in various AI code editors:
+
+- **Cursor**: Installed into the `.cursor/rules/` directory as `docshark.mdc`.
+- **Windsurf**: Appended to your project's `.windsurfrules` file.
+- **VS Code (Cline / Roo Code)**: Injected into `.clinerules` or `.roomodes`.
+- **VS Code (GitHub Copilot)**: Injected into `.github/copilot-instructions.md`.
+- **Trae IDE**: Installed into the `.trae/skills/` directory.
+
+---
+
 ## Directory Structure
 
 ```
-.github/skills/
+skills/
 ├── docshark/
 │   ├── SKILL.md                 # Main skill definition
 │   ├── evals/                   # Evaluation test cases
@@ -59,6 +87,7 @@ This directory contains reusable Agent Skills for the DocShark documentation ind
 To publish these skills to the [Agent Skills Directory](https://skills.sh/):
 
 ### Quick Start
+
 ```bash
 # 1. Validate locally
 gh skill publish --dry-run
@@ -71,14 +100,18 @@ gh skill publish
 ```
 
 ### Full Instructions
+
 See [PUBLISHING_SKILLS.md](../../PUBLISHING_SKILLS.md) for:
+
 - Step-by-step publishing guide
 - Troubleshooting common issues
 - Version management and CI/CD integration
 - Verification after publishing
 
 ### Pre-Publishing Checklist
+
 See [VALIDATION_CHECKLIST.md](./VALIDATION_CHECKLIST.md) for:
+
 - Required frontmatter fields
 - Directory naming rules
 - Content quality standards
@@ -87,6 +120,7 @@ See [VALIDATION_CHECKLIST.md](./VALIDATION_CHECKLIST.md) for:
 ## Skill Metadata Requirements
 
 ### Frontmatter Format
+
 Each SKILL.md must start with valid YAML:
 
 ```yaml
@@ -97,6 +131,7 @@ description: "Clear description with action verbs. Use this skill when the user.
 ```
 
 ### Key Rules
+
 - ✅ `name:` must match directory name
 - ✅ `description:` must be 150+ characters and include "Use this skill when"
 - ✅ `allowed-tools:` (if present) must be a string: `"tool1, tool2"` not `["tool1", "tool2"]`
@@ -106,6 +141,7 @@ description: "Clear description with action verbs. Use this skill when the user.
 ## Best Practices
 
 ### Skill Design
+
 1. **Clear Triggering**: Describe exactly when the skill should be used
 2. **Actionable Content**: Provide workflows, examples, decision flows
 3. **Error Handling**: Include troubleshooting section
@@ -113,6 +149,7 @@ description: "Clear description with action verbs. Use this skill when the user.
 5. **Progressive Disclosure**: Keep SKILL.md under 500 lines; link to references for deep content
 
 ### Content Patterns
+
 - **Decision flows**: Numbered steps for common workflows
 - **Code examples**: Real, executable examples
 - **Best practices**: ✅ good vs ❌ bad patterns
@@ -135,6 +172,7 @@ When you modify or enhance a skill:
 ## Integration Examples
 
 ### Claude Desktop
+
 ```json
 {
   "mcpServers": {
@@ -147,6 +185,7 @@ When you modify or enhance a skill:
 ```
 
 ### VS Code + Copilot
+
 ```json
 {
   "copilot.mcp.enabled": true,
@@ -172,7 +211,7 @@ After publishing on skills.sh/:
 
 To add new DocShark-related skills:
 
-1. Create directory: `.github/skills/new-skill-name/`
+1. Create directory: `skills/new-skill-name/`
 2. Create `SKILL.md` with required frontmatter
 3. Add test cases to `evals/`
 4. Run validation: `gh skill publish --dry-run`

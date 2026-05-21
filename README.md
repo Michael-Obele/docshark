@@ -87,6 +87,32 @@ Interactive CLI runs will also let you know when a newer version is available. U
 
 For scripts, `docshark update --check` exits `0` when current, `10` when a newer version is available, and `1` when the version check could not be completed.
 
+## 🧠 Agent Skills
+
+DocShark includes official Agent Skills available on the [skills.sh](https://skills.sh) registry. These skills teach AI assistants exactly how to set up, use, and troubleshoot the DocShark MCP server.
+
+To install a skill directly into your AI coding assistant:
+
+```bash
+# Add the 'docshark' skill for using the MCP tools
+npx skills add Michael-Obele/docshark --skill docshark
+
+# Add the 'using-docshark' skill for setup and configuration help
+npx skills add Michael-Obele/docshark --skill using-docshark
+```
+
+### Skill Setup by Code Editor
+
+The `npx skills add` CLI automatically configures skills for most editors, but here is how they integrate:
+
+- **Cursor**: Skills are added to `.cursor/rules/`
+- **Windsurf**: Skills are added to `.windsurfrules`
+- **VS Code (Cline / Roo Code)**: Skills are added to `.clinerules` or `.roomodes`
+- **Trae**: Skills are added to `.trae/skills/`
+- **GitHub Copilot**: Skills are appended to `.github/copilot-instructions.md`
+
+Check out the [skills/README.md](skills/README.md) for detailed workflows on how these skills optimize your AI coding experience.
+
 ## 🔌 MCP Integration
 
 ### VS Code (GitHub Copilot / MCP Extension)

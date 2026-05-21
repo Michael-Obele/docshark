@@ -1,6 +1,7 @@
 ---
 name: using-docshark
 description: "Set up, configure, and integrate DocShark MCP server into your development workflow. Use this skill when users want to install DocShark, configure documentation sources, set up the dashboard, integrate with MCP clients (Claude Desktop, VS Code), manage libraries, or troubleshoot crawling and search issues."
+allowed-tools: "RunCommand, Read, Write, SearchReplace"
 ---
 
 # Using DocShark
@@ -22,6 +23,7 @@ DocShark is a fast, local-first MCP (Model Context Protocol) server that scrapes
 ## Quick Start
 
 ### Installation
+
 ```bash
 npx docshark
 ```
@@ -125,6 +127,7 @@ Query in developer language, not keywords:
 ### Handle JS-Rendered Sites
 
 If a site is a React/Vue SPA:
+
 - DocShark automatically detects empty HTML shells
 - Falls back to `puppeteer-core` for rendering
 - Requires optional installation: `npm install puppeteer-core`

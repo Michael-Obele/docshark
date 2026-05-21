@@ -1,6 +1,7 @@
 ---
 name: docshark
 description: "Search, discover, and manage documentation through a local DocShark MCP server. Use this skill when you need grounded documentation lookup for any framework, library, API, or tool—including discovering what's indexed, searching natural-language queries, reading full pages, and managing missing or stale libraries. ALWAYS use this skill when the user asks about framework/library/API documentation and DocShark is available as an MCP tool."
+allowed-tools: "list_libraries, search_docs, get_doc_page, add_library, refresh_library, remove_library"
 ---
 
 # Using DocShark
@@ -24,8 +25,8 @@ Do not use this skill for general web search or for repository source-code searc
 1. If you do not know what libraries are available, call `list_libraries` first.
 2. If the right library exists, call `search_docs` with a natural-language query.
 3. If the search result identifies the right page but the snippet is incomplete, call `get_doc_page`.
-4. If the needed docs are missing, call `manage_library` with `action="add"`.
-5. If a library exists but looks outdated or incomplete, use `manage_library` with `action="info"` or `action="refresh"`.
+4. If the needed docs are missing, call `add_library` with the documentation URL.
+5. If a library exists but looks outdated or incomplete, use `refresh_library`.
 
 ## Core Patterns
 
@@ -67,13 +68,11 @@ Do not fetch full pages for every result. Read the full page only after search n
 
 ### 5. Handle missing or stale docs explicitly
 
-Use `manage_library` instead of silently falling back to model memory when DocShark lacks coverage.
+Use `add_library`, `refresh_library`, or `remove_library` instead of silently falling back to model memory when DocShark lacks coverage.
 
-- `action="add"` when the library is not indexed yet
-- `action="info"` when you need page coverage, stats, or stored paths
-- `action="refresh"` when docs may be outdated
-- `action="rename"` when the stored name is awkward or inconsistent
-- `action="remove"` only when cleanup is clearly requested
+- `add_library` when the library is not indexed yet
+- `refresh_library` when docs may be outdated
+- `remove_library` only when cleanup is clearly requested
 
 When adding a library, prefer the base documentation URL rather than a deep page URL unless the site structure demands otherwise.
 
@@ -101,7 +100,7 @@ User: "Do we have Better Auth docs indexed? If not, add them."
 Preferred behavior:
 
 1. `list_libraries`.
-2. If missing, `manage_library` with `action="add"` and the Better Auth docs URL.
+2. If missing, call `add_library` with the Better Auth docs URL.
 3. Explain that indexing has started and that search quality depends on crawl completion.
 
 **Example 3:**
@@ -118,4 +117,4 @@ Preferred behavior:
 - Using short keyword piles instead of a concrete natural-language query.
 - Reading full pages too early and wasting context.
 - Answering from model memory after DocShark returns no results instead of checking indexing state.
-- Using `manage_library remove` when the user only asked to refresh or inspect coverage.
+- Using `remove_library` when the user only asked to refresh or inspect coverage.
