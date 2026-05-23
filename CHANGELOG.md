@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.23](https://github.com/Michael-Obele/docshark/compare/v0.1.22...v0.1.23) (2026-05-23)
+
+
+### ✨ Features
+
+* add .fallowrc.json configuration and .gitignore for fallow directory ([b7025a6](https://github.com/Michael-Obele/docshark/commit/b7025a67329b03a3a76ca9098ad7be791eebc4ba))
+* add .fallowrc.json configuration for improved code quality checks ([2f7aeef](https://github.com/Michael-Obele/docshark/commit/2f7aeef1c066fb216494c9dc72d72dd95473df55))
+* add optimized Fallow configuration for improved code analysis and quality checks ([ac51780](https://github.com/Michael-Obele/docshark/commit/ac51780c3f5e560325aa9c2ca5e473b5b5516f89))
+* **database:** add column management methods and ensure session_id column in crawl_jobs table ([56879ea](https://github.com/Michael-Obele/docshark/commit/56879ea7f019ca35233812f1d96d35aecc62631d))
+* remove deprecated fallow-config documentation ([1dc7bea](https://github.com/Michael-Obele/docshark/commit/1dc7beafe05db7612fb0df8fb8c460b778a3c859))
+* **skills:** add DocShark agent skills and supporting files ([a9afc3d](https://github.com/Michael-Obele/docshark/commit/a9afc3dc9c55e87a18fa76769dca8d79da5f2103))
+* **tests:** add comprehensive test suites for API, database migrations, and scraper functionality ([cb78abf](https://github.com/Michael-Obele/docshark/commit/cb78abf53b32588a6c88a57eb66927e410d9d577))
+* **tests:** add regression testing instructions and scripts for core and main README ([9c8dd67](https://github.com/Michael-Obele/docshark/commit/9c8dd67945a2cda6ff1d275088663ac897b0df4a))
+* update Fallow configuration by removing redundant package-specific settings and enhancing ignore patterns ([9304c8c](https://github.com/Michael-Obele/docshark/commit/9304c8ce66e2c84f41bcf1d3208e407b0b633037))
+* **version:** update version to 0.1.22 ([fa5efd6](https://github.com/Michael-Obele/docshark/commit/fa5efd697a31ef5764f67ce13efea928e9319f00))
+
 ## [0.1.22](https://github.com/Michael-Obele/docshark/compare/v0.1.21...v0.1.22) (2026-05-13)
 
 
