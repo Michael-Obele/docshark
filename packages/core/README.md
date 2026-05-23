@@ -160,6 +160,16 @@ bun run src/cli.ts start --port 6380
 bun run src/cli.ts list
 ```
 
+### Tests
+
+Run the regression suite before merging or publishing changes:
+
+```bash
+bun test scripts/*.test.ts
+```
+
+The suite covers storage and migrations, library management, extraction, chunking, search, crawl helpers, API routes, and MCP tool wrappers.
+
 ## 🔄 Versioning & Changelog
 
 This project uses [Google's Release Please](https://github.com/googleapis/release-please) to automate versioning and changelog generation.

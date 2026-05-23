@@ -9,6 +9,8 @@
     "check:site": "pnpm --filter site check",
     "dev:core": "bun run packages/core/src/cli.ts start",
     "build:core": "cd packages/core && bun run build",
+    "test:core": "cd packages/core && bun test scripts/*.test.ts",
+    "test": "pnpm test:core",
     "check:core": "bunx tsc --noEmit -p packages/core/tsconfig.json",
     "check": "pnpm check:core && pnpm check:site"
   },

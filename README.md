@@ -186,6 +186,20 @@ bun run src/cli.ts start --port 6380
 bun run src/cli.ts list
 ```
 
+### Tests
+
+Run the core regression suite before merging or publishing changes:
+
+```bash
+# From the repo root
+pnpm test:core
+
+# Or from packages/core
+bun test scripts/*.test.ts
+```
+
+The suite covers the current core engine surfaces: SQLite storage and migrations, library management, extraction, chunking, search, crawl helpers, API routes, and MCP tool wrappers.
+
 ## 🔄 Versioning & Changelog
 
 This project uses [Google's Release Please](https://github.com/googleapis/release-please) to automate versioning and changelog generation.
