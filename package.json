@@ -14,5 +14,5 @@
     "check:core": "bunx tsc --noEmit -p packages/core/tsconfig.json",
     "check": "pnpm check:core && pnpm check:site"
   },
-  "version": "0.1.22"
+  "version": "0.1.23"
 }
