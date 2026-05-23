@@ -8,6 +8,20 @@ import type { Library, Page, ChunkRecord, CrawlJob } from "../types.js";
 export class Database {
   private db!: BunDatabase;
 
+  private hasColumn(tableName: string, columnName: string): boolean {
+    const columns = this.db
+      .prepare(`PRAGMA table_info(${tableName})`)
+      .all() as Array<{ name: string }>;
+
+    return columns.some((column) => column.name === columnName);
+  }
+
+  private ensureColumn(tableName: string, columnName: string, definition: string) {
+    if (!this.hasColumn(tableName, columnName)) {
+      this.db.run(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+    }
+  }
+
   init() {
     const dir =
       process.env.DOCSHARK_DATA_DIR || resolve(homedir(), ".docshark");
@@ -116,6 +130,8 @@ export class Database {
         created_at       TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
+
+    this.ensureColumn("crawl_jobs", "session_id", "TEXT");
   }
 
   // ──────────────────────────────────────
