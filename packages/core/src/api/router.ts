@@ -59,6 +59,14 @@ export function createApiRouter(deps: ApiDeps) {
                     return json(results);
                 }
 
+                // POST /api/search/batch
+                if (method === 'POST' && path === '/search/batch') {
+                    const body = await request.json();
+                    const requests = Array.isArray(body?.requests) ? body.requests : [];
+                    const results = deps.searchEngine.searchMany(requests);
+                    return json(results);
+                }
+
                 // GET /api/crawls
                 if (method === 'GET' && path === '/crawls') {
                     const libraryId = url.searchParams.get('library_id') || undefined;

@@ -2,13 +2,20 @@
 import type { Database } from "./db.js";
 import { QueryPlanner, normalizeSearchText } from "../search/query-planner.js";
 import type {
+  BatchSearchRequest,
+  BatchSearchResult,
   SearchCandidate,
   SearchOptions,
   SearchPlan,
   SearchResult,
 } from "../search/types.js";
 
-export type { SearchOptions, SearchResult } from "../search/types.js";
+export type {
+  BatchSearchRequest,
+  BatchSearchResult,
+  SearchOptions,
+  SearchResult,
+} from "../search/types.js";
 
 export class SearchEngine {
   private planner = new QueryPlanner();
@@ -18,18 +25,141 @@ export class SearchEngine {
   search(query: string, opts: SearchOptions = {}): SearchResult[] {
     const limit = opts.limit ?? 5;
     const plan = this.planner.build(query, opts.library);
-    const ftsQuery = this.buildFtsQuery(plan);
+
+    return this.searchWithPlan(plan, opts.library, limit);
+  }
+
+  searchMany(
+    requests: BatchSearchRequest[],
+  ): BatchSearchResult[] {
+    return requests.map((request) => {
+      const limit = request.limit ?? 5;
+      return {
+        query: request.query,
+        library: request.library,
+        limit,
+        results: this.search(request.query, {
+          library: request.library,
+          limit,
+        }),
+      };
+    });
+  }
+
+  private searchWithPlan(
+    plan: SearchPlan,
+    library: string | undefined,
+    limit: number,
+  ): SearchResult[] {
+    const branchPlans = this.expandPlans(plan, library);
+
+    if (branchPlans.length === 1) {
+      return this.searchSingle(branchPlans[0], plan, library, limit);
+    }
+
+    const branchLimit = Math.min(Math.max(limit * 2, 6), 12);
+    const bestByChunk = new Map<
+      string,
+      SearchResult & { branch_hits: number }
+    >();
+
+    for (const [branchIndex, branchPlan] of branchPlans.entries()) {
+      const branchResults = this.searchSingle(
+        branchPlan,
+        plan,
+        library,
+        branchLimit,
+      );
+
+      for (const branchResult of branchResults) {
+        const chunkKey = `${branchResult.page_url}#${branchResult.chunk_index}`;
+        const scoreBoost = branchIndex === 0 ? 0 : 0.03;
+        const adjustedScore = Number(
+          (branchResult.rerank_score + scoreBoost).toFixed(6),
+        );
+        const existing = bestByChunk.get(chunkKey);
+
+        if (!existing) {
+          bestByChunk.set(chunkKey, {
+            ...branchResult,
+            rerank_score: adjustedScore,
+            branch_hits: 1,
+          });
+          continue;
+        }
+
+        existing.branch_hits += 1;
+        if (adjustedScore > existing.rerank_score) {
+          bestByChunk.set(chunkKey, {
+            ...branchResult,
+            rerank_score: adjustedScore,
+            branch_hits: existing.branch_hits,
+          });
+        }
+      }
+    }
+
+    const aggregated = Array.from(bestByChunk.values())
+      .map(({ branch_hits, ...result }) => {
+        const reasons = [...result.reasons];
+        if (branch_hits > 1) {
+          reasons.push("matched multiple focused subqueries");
+        }
+
+        return {
+          ...result,
+          rerank_score: Number(
+            (result.rerank_score + Math.min((branch_hits - 1) * 0.05, 0.15)).toFixed(6),
+          ),
+          reasons: Array.from(new Set(reasons)).slice(0, 4),
+        };
+      })
+      .sort((left, right) => {
+        if (right.rerank_score !== left.rerank_score) {
+          return right.rerank_score - left.rerank_score;
+        }
+
+        return left.lexical_score - right.lexical_score;
+      });
+
+    return this.collapseDuplicates(plan, aggregated).slice(0, limit);
+  }
+
+  private expandPlans(plan: SearchPlan, library: string | undefined): SearchPlan[] {
+    const plans = [plan];
+    const seen = new Set([plan.normalized_query]);
+
+    for (const subquery of plan.decomposed_queries) {
+      const subqueryPlan = this.planner.build(subquery, library);
+      if (seen.has(subqueryPlan.normalized_query)) {
+        continue;
+      }
+
+      seen.add(subqueryPlan.normalized_query);
+      plans.push(subqueryPlan);
+    }
+
+    return plans;
+  }
+
+  private searchSingle(
+    retrievalPlan: SearchPlan,
+    scoringPlan: SearchPlan,
+    library: string | undefined,
+    limit: number,
+  ): SearchResult[] {
+    const ftsQuery = this.buildFtsQuery(retrievalPlan);
 
     if (!ftsQuery) return [];
 
     try {
-      const candidates = this.fetchCandidates(ftsQuery, opts.library, limit);
+      const candidates = this.fetchCandidates(ftsQuery, library, limit);
       if (candidates.length === 0) {
         return [];
       }
 
-      const reranked = this.rerank(plan, candidates);
-      return this.collapseDuplicates(plan, reranked).slice(0, limit);
+      const reranked = this.rerank(scoringPlan, candidates);
+      return this.collapseDuplicates(scoringPlan, reranked).slice(0, limit);
     } catch (err) {
       console.warn(`[DocShark] Search failed:`, (err as Error).message);
       return [];

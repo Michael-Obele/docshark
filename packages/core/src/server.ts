@@ -5,7 +5,10 @@ import * as v from "valibot";
 import { tool } from "tmcp/utils";
 import { Database } from "./storage/db.js";
 import { SearchEngine } from "./storage/search.js";
-import { formatSearchResults } from "./search/format-results.js";
+import {
+  formatBatchSearchResults,
+  formatSearchResults,
+} from "./search/format-results.js";
 import { LibraryService } from "./services/library.js";
 import { JobManager } from "./jobs/manager.js";
 import { VERSION } from "./version.js";
@@ -68,6 +71,51 @@ server.tool(
         return tool.text(`No results found for "${query}".`);
 
       return tool.text(formatSearchResults(query, results));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Search failed";
+      return tool.text(`❌ Error: ${message}`);
+    }
+  },
+);
+
+server.tool(
+  {
+    name: "search_docs_batch",
+    description:
+      "Run multiple documentation searches in one call. Use this for repeated or decomposed lookups.",
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    schema: v.object({
+      requests: v.pipe(
+        v.array(
+          v.object({
+            query: v.pipe(
+              v.string(),
+              v.description("Search query. Use natural language."),
+            ),
+            library: v.optional(
+              v.pipe(
+                v.string(),
+                v.description("Filter to a specific library."),
+              ),
+            ),
+            limit: v.optional(
+              v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(20)),
+              5,
+            ),
+          }),
+        ),
+        v.minLength(1),
+        v.maxLength(10),
+      ),
+    }),
+  },
+  async ({ requests }) => {
+    try {
+      const results = searchEngine.searchMany(requests);
+      return tool.text(formatBatchSearchResults(results));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Search failed";
       return tool.text(`❌ Error: ${message}`);

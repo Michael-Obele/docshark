@@ -5,7 +5,10 @@ import { startHttpServer } from "./http.js";
 import { StdioTransport } from "@tmcp/transport-stdio";
 import { server, db, searchEngine, libraryService } from "./server.js";
 import { maybeNotifyAboutUpdate, runUpdateCommand } from "./cli-update.js";
-import { formatSearchResults } from "./search/format-results.js";
+import {
+  formatBatchSearchResults,
+  formatSearchResults,
+} from "./search/format-results.js";
 import { VERSION } from "./version.js";
 
 const useColor = process.stdout.isTTY;
@@ -192,6 +195,30 @@ cli
     }
 
     console.log(`\n${formatSearchResults(query, results)}\n`);
+  });
+
+cli
+  .command("search-batch [...queries]", "Search multiple documentation queries")
+  .option("-l, --library <name>", "Filter all queries by library")
+  .option("-m, --limit <n>", "Max results per query", { default: "5" })
+  .action(async (queries, opts) => {
+    await maybeNotifyForCommand("search-batch");
+
+    if (!Array.isArray(queries) || queries.length === 0) {
+      console.error("\n❌ Please provide at least one query.\n");
+      process.exit(1);
+    }
+
+    db.init();
+    const results = searchEngine.searchMany(
+      queries.map((query) => ({
+        query,
+        library: opts.library,
+        limit: parseInt(opts.limit),
+      })),
+    );
+
+    console.log(`\n${formatBatchSearchResults(results)}\n`);
   });
 
 cli

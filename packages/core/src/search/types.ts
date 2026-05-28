@@ -10,12 +10,19 @@ export interface SearchOptions {
   limit?: number;
 }
 
+export interface BatchSearchRequest {
+  query: string;
+  library?: string;
+  limit?: number;
+}
+
 export interface SearchPlan {
   original_query: string;
   normalized_query: string;
   intent: SearchIntent;
   keywords: string[];
   phrases: string[];
+  decomposed_queries: string[];
   requested_version?: string;
   requested_library?: string;
 }
@@ -39,4 +46,11 @@ export interface SearchResult extends SearchCandidate {
   reasons: string[];
   path_type: string;
   version_tag: string | null;
+}
+
+export interface BatchSearchResult {
+  query: string;
+  library?: string;
+  limit: number;
+  results: SearchResult[];
 }
