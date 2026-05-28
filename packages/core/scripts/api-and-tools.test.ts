@@ -1,3 +1,5 @@
+/// <reference types="bun" />
+
 import { describe, expect, test } from "bun:test";
 import type { Database } from "../src/storage/db.js";
 import type { SearchEngine } from "../src/storage/search.js";
@@ -10,6 +12,7 @@ import { createGetDocPageTool } from "../src/tools/get-doc-page.js";
 import { createListLibrariesTool } from "../src/tools/list-libraries.js";
 import { createRefreshLibraryTool } from "../src/tools/refresh-library.js";
 import { createRemoveLibraryTool } from "../src/tools/remove-library.js";
+import { createSearchDocsBatchTool } from "../src/tools/search-docs-batch.js";
 import { createSearchDocsTool } from "../src/tools/search-docs.js";
 import { VERSION } from "../src/version.js";
 
@@ -78,6 +81,32 @@ describe("createApiRouter", () => {
             },
           ];
         },
+        searchMany(requests: Array<{ query: string; library?: string; limit?: number }>) {
+          return requests.map((request) => ({
+            query: request.query,
+            library: request.library,
+            limit: request.limit ?? 5,
+            results: [
+              {
+                content: `batched result for ${request.query}`,
+                heading_context: "Batch",
+                page_url: "https://docs.python.org/3/tutorial/",
+                page_path: "/docs/batch",
+                page_title: "Batch",
+                library_name: request.library ?? "docshark",
+                library_display_name: request.library ?? "DocShark",
+                lexical_score: -1,
+                has_code_block: false,
+                token_count: 50,
+                chunk_index: 0,
+                rerank_score: 0.81,
+                reasons: ["matched multiple focused subqueries"],
+                path_type: "guide",
+                version_tag: null,
+              },
+            ],
+          }));
+        },
       } as unknown as SearchEngine,
       jobManager: {
         startCrawl(libraryId: string) {
@@ -120,6 +149,15 @@ describe("createApiRouter", () => {
     const search = await router.handle(
       new Request("https://docs.python.org/api/search?q=docshark&limit=1"),
     );
+    const batchSearch = await router.handle(
+      new Request("https://docs.python.org/api/search/batch", {
+        method: "POST",
+        body: JSON.stringify({
+          requests: [{ query: "overflow horizontal scroll", library: "tailwindcss", limit: 2 }],
+        }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
     const add = await router.handle(
       new Request("https://docs.python.org/api/libraries", {
         method: "POST",
@@ -136,6 +174,7 @@ describe("createApiRouter", () => {
     expect(await health.json()).toEqual({ status: "ok", version: VERSION });
     expect(await stats.json()).toEqual({ libraries: 1, pages: 5, chunks: 12 });
     expect((await search.json())[0].page_title).toBe("Intro");
+    expect((await batchSearch.json())[0].query).toBe("overflow horizontal scroll");
     expect(add.status).toBe(201);
     expect((await add.json()).jobId).toBe("job-1");
     expect(await refresh.json()).toEqual({ jobId: "job-for-lib-1" });
@@ -195,6 +234,36 @@ describe("MCP tools", () => {
         ];
       },
     } as unknown as SearchEngine);
+    const batchSearchTool = createSearchDocsBatchTool({
+      searchMany() {
+        return [
+          {
+            query: "overflow horizontal scroll",
+            library: "tailwindcss",
+            limit: 2,
+            results: [
+              {
+                content: "Use overflow-x-auto for horizontal card rows.",
+                heading_context: "Overflow",
+                page_url: "https://tailwindcss.com/docs/overflow",
+                page_path: "/docs/overflow",
+                page_title: "Overflow",
+                library_name: "tailwindcss",
+                library_display_name: "Tailwind CSS",
+                lexical_score: -1,
+                has_code_block: true,
+                token_count: 82,
+                chunk_index: 0,
+                rerank_score: 0.92,
+                reasons: ["matched multiple focused subqueries"],
+                path_type: "guide",
+                version_tag: null,
+              },
+            ],
+          },
+        ];
+      },
+    } as unknown as SearchEngine);
     const pageTool = createGetDocPageTool({
       getPage() {
         return {
@@ -241,6 +310,15 @@ describe("MCP tools", () => {
       query: "overview",
       limit: 1,
     });
+    const batchSearchResult = await batchSearchTool.handler({
+      requests: [
+        {
+          query: "overflow horizontal scroll",
+          library: "tailwindcss",
+          limit: 2,
+        },
+      ],
+    });
     const pageResult = await pageTool.handler({
       url: "https://docs.python.org/3/tutorial/",
     });
@@ -251,6 +329,9 @@ describe("MCP tools", () => {
     expect(listResult.content[0]?.text).toContain("Indexed Libraries");
     expect(searchResult.content[0]?.text).toContain(
       '## Results for "overview"',
+    );
+    expect(batchSearchResult.content[0]?.text).toContain(
+      '## Batch Search Results',
     );
     expect(pageResult.content[0]?.text).toContain("# Overview");
     expect(refreshResult.content[0]?.text).toContain(

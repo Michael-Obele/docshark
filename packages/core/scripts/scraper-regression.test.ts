@@ -1,3 +1,5 @@
+/// <reference types="bun" />
+
 import { afterEach, describe, expect, test } from "bun:test";
 import { discoverPages } from "../src/scraper/discoverer.js";
 import { fetchPage } from "../src/scraper/fetcher.js";
