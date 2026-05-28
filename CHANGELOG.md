@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.24](https://github.com/Michael-Obele/docshark/compare/v0.1.23...v0.1.24) (2026-05-28)
+
+
+### ✨ Features
+
+* **search:** implement batch search functionality and enhance API for multiple queries ([31eb56b](https://github.com/Michael-Obele/docshark/commit/31eb56bd1b801fed6fc355e44918681048f57bc4))
+* **tests:** enhance test coverage with new search and batch processing functionalities ([35e7fe5](https://github.com/Michael-Obele/docshark/commit/35e7fe5eca91155d23d282e599777ce6be613a93))
+
 ## [0.1.23](https://github.com/Michael-Obele/docshark/compare/v0.1.22...v0.1.23) (2026-05-23)
 
 
