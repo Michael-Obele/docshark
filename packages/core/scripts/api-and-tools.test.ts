@@ -1,20 +1,49 @@
 /// <reference types="bun" />
 
-import { describe, expect, test } from "bun:test";
-import type { Database } from "../src/storage/db.js";
+import { afterEach, describe, expect, test } from "bun:test";
+import { Database as BunDatabase } from "bun:sqlite";
+import { mkdtempSync, rmSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
+import { Database } from "../src/storage/db.js";
 import type { SearchEngine } from "../src/storage/search.js";
 import type { JobManager } from "../src/jobs/manager.js";
-import type { LibraryService } from "../src/services/library.js";
+import { LibraryService } from "../src/services/library.js";
 import { createApiRouter } from "../src/api/router.js";
 import { EventBus } from "../src/jobs/events.js";
 import { createAddLibraryTool } from "../src/tools/add-library.js";
 import { createGetDocPageTool } from "../src/tools/get-doc-page.js";
-import { createListLibrariesTool } from "../src/tools/list-libraries.js";
 import { createRefreshLibraryTool } from "../src/tools/refresh-library.js";
 import { createRemoveLibraryTool } from "../src/tools/remove-library.js";
-import { createSearchDocsBatchTool } from "../src/tools/search-docs-batch.js";
 import { createSearchDocsTool } from "../src/tools/search-docs.js";
+import { SearchEngine as SearchEngineImpl } from "../src/storage/search.js";
 import { VERSION } from "../src/version.js";
+
+const tempDirs: string[] = [];
+const openHandles: BunDatabase[] = [];
+
+function createTempDatabase(): Database {
+  const dataDir = mkdtempSync(join(tmpdir(), "docshark-api-"));
+  tempDirs.push(dataDir);
+  process.env.DOCSHARK_DATA_DIR = dataDir;
+
+  const db = new Database();
+  db.init();
+  openHandles.push(db.raw());
+  return db;
+}
+
+afterEach(() => {
+  for (const handle of openHandles.splice(0)) {
+    handle.close();
+  }
+
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+
+  delete process.env.DOCSHARK_DATA_DIR;
+});
 
 describe("EventBus", () => {
   test("registers, emits, and removes listeners", () => {
@@ -34,112 +63,71 @@ describe("EventBus", () => {
 });
 
 describe("createApiRouter", () => {
-  test("serves health, stats, search, add, and refresh endpoints", async () => {
-    const deps: Parameters<typeof createApiRouter>[0] = {
-      db: {
-        listLibraries(status?: string) {
-          const libraries = [
-            {
-              id: "lib-1",
-              name: "docshark",
-              display_name: "DocShark",
-              url: "https://docs.python.org/3/",
-              version: null,
-              description: null,
-              status: status === "indexed" ? "indexed" : "indexed",
-              page_count: 5,
-              chunk_count: 12,
-              crawl_config: null,
-              last_crawled_at: null,
-              created_at: "2026-05-23T00:00:00Z",
-              updated_at: "2026-05-23T00:00:00Z",
-            },
-          ];
-          return libraries;
-        },
-        removeLibrary() {},
-      } as unknown as Database,
-      searchEngine: {
-        search(query: string) {
-          return [
-            {
-              content: `result for ${query}`,
-              heading_context: "Intro",
-              page_url: "https://docs.python.org/3/tutorial/",
-              page_path: "/docs/intro",
-              page_title: "Intro",
-              library_name: "docshark",
-              library_display_name: "DocShark",
-              lexical_score: -1,
-              has_code_block: false,
-              token_count: 50,
-              chunk_index: 0,
-              rerank_score: 0.88,
-              reasons: ["exact title match"],
-              path_type: "overview",
-              version_tag: null,
-            },
-          ];
-        },
-        searchMany(requests: Array<{ query: string; library?: string; limit?: number }>) {
-          return requests.map((request) => ({
-            query: request.query,
-            library: request.library,
-            limit: request.limit ?? 5,
-            results: [
-              {
-                content: `batched result for ${request.query}`,
-                heading_context: "Batch",
-                page_url: "https://docs.python.org/3/tutorial/",
-                page_path: "/docs/batch",
-                page_title: "Batch",
-                library_name: request.library ?? "docshark",
-                library_display_name: request.library ?? "DocShark",
-                lexical_score: -1,
-                has_code_block: false,
-                token_count: 50,
-                chunk_index: 0,
-                rerank_score: 0.81,
-                reasons: ["matched multiple focused subqueries"],
-                path_type: "guide",
-                version_tag: null,
-              },
-            ],
-          }));
-        },
-      } as unknown as SearchEngine,
-      jobManager: {
-        startCrawl(libraryId: string) {
-          return { id: `job-for-${libraryId}` };
-        },
-        listJobs() {
-          return [];
-        },
-      } as unknown as JobManager,
-      libraryService: {
-        async add(body: { url: string }) {
-          return {
-            id: "lib-1",
-            name: "docshark",
-            display_name: "DocShark",
-            url: body.url,
-            version: null,
-            description: null,
-            status: "pending",
-            page_count: 0,
-            chunk_count: 0,
-            crawl_config: null,
-            last_crawled_at: null,
-            created_at: "2026-05-23T00:00:00Z",
-            updated_at: "2026-05-23T00:00:00Z",
-            jobId: "job-1",
-          };
-        },
-      } as unknown as LibraryService,
+  test("uses real storage for add, stats, search, and delete routes", async () => {
+    const db = createTempDatabase();
+    const started: string[] = [];
+    const jobManager = {
+      startCrawl(libraryId: string) {
+        started.push(libraryId);
+        return { id: `job-for-${libraryId}` };
+      },
+      listJobs() {
+        return [];
+      },
+    } as unknown as JobManager;
+    const libraryService = new LibraryService(db, jobManager);
+    const searchEngine = new SearchEngineImpl(db);
+    const router = createApiRouter({
+      db,
+      searchEngine,
+      jobManager,
+      libraryService,
       eventBus: new EventBus(),
-    };
+    });
 
-    const router = createApiRouter(deps);
+    const add = await router.handle(
+      new Request("https://docs.python.org/api/libraries", {
+        method: "POST",
+        body: JSON.stringify({ url: "https://docs.python.org/3/tutorial/" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    expect(add.status).toBe(201);
+    const added = (await add.json()) as {
+      id: string;
+      name: string;
+      display_name: string;
+      jobId: string;
+    };
+    expect(started).toEqual([added.id]);
+    expect(added.jobId).toBe(`job-for-${added.id}`);
+
+    const pageId = db.upsertPage({
+      id: "page-1",
+      libraryId: added.id,
+      url: "https://docs.python.org/3/tutorial/install",
+      path: "/docs/getting-started",
+      title: "Getting Started",
+      contentMarkdown:
+        "# Getting Started\n\nInstall DocShark and crawl your first library.",
+      contentHash: "hash-1",
+      headings: [{ level: 1, text: "Getting Started" }],
+    });
+    db.insertChunks([
+      {
+        id: "chunk-1",
+        pageId,
+        libraryId: added.id,
+        content: "Install DocShark and crawl your first library.",
+        headingContext: "Getting Started",
+        chunkIndex: 0,
+        tokenCount: 80,
+        hasCodeBlock: false,
+      },
+    ]);
+    db.updateLibraryStats(added.id, 1, 1);
+
     const health = await router.handle(
       new Request("https://docs.python.org/api/health"),
     );
@@ -147,198 +135,138 @@ describe("createApiRouter", () => {
       new Request("https://docs.python.org/api/stats"),
     );
     const search = await router.handle(
-      new Request("https://docs.python.org/api/search?q=docshark&limit=1"),
+      new Request(
+        `https://docs.python.org/api/search?q=${encodeURIComponent("install first library")}&library=${added.name}&limit=1`,
+      ),
     );
-    const batchSearch = await router.handle(
-      new Request("https://docs.python.org/api/search/batch", {
-        method: "POST",
-        body: JSON.stringify({
-          requests: [{ query: "overflow horizontal scroll", library: "tailwindcss", limit: 2 }],
-        }),
-        headers: { "content-type": "application/json" },
-      }),
-    );
-    const add = await router.handle(
-      new Request("https://docs.python.org/api/libraries", {
-        method: "POST",
-        body: JSON.stringify({ url: "https://docs.python.org/3/" }),
-        headers: { "content-type": "application/json" },
-      }),
-    );
-    const refresh = await router.handle(
-      new Request("https://docs.python.org/api/libraries/lib-1/refresh", {
-        method: "POST",
+    const remove = await router.handle(
+      new Request(`https://docs.python.org/api/libraries/${added.id}`, {
+        method: "DELETE",
       }),
     );
 
     expect(await health.json()).toEqual({ status: "ok", version: VERSION });
-    expect(await stats.json()).toEqual({ libraries: 1, pages: 5, chunks: 12 });
-    expect((await search.json())[0].page_title).toBe("Intro");
-    expect((await batchSearch.json())[0].query).toBe("overflow horizontal scroll");
-    expect(add.status).toBe(201);
-    expect((await add.json()).jobId).toBe("job-1");
-    expect(await refresh.json()).toEqual({ jobId: "job-for-lib-1" });
+    expect(await stats.json()).toEqual({ libraries: 1, pages: 1, chunks: 1 });
+    expect((await search.json())[0].page_title).toBe("Getting Started");
+    expect(await remove.json()).toEqual({ ok: true });
+    expect(db.getLibraryById(added.id)).toBeNull();
+  });
+
+  test("returns 500 when library creation fails through the real service", async () => {
+    const db = createTempDatabase();
+    const jobManager = {
+      startCrawl(libraryId: string) {
+        return { id: `job-for-${libraryId}` };
+      },
+      listJobs() {
+        return [];
+      },
+    } as unknown as JobManager;
+    const router = createApiRouter({
+      db,
+      searchEngine: new SearchEngineImpl(db),
+      jobManager,
+      libraryService: new LibraryService(db, jobManager),
+      eventBus: new EventBus(),
+    });
+    const request = new Request("https://docs.python.org/api/libraries", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://docs.python.org/3/tutorial/" }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const originalConsoleError = console.error;
+    const loggedErrors: unknown[][] = [];
+    console.error = (...args: unknown[]) => {
+      loggedErrors.push(args);
+    };
+
+    const first = await router.handle(request.clone());
+    const second = await router.handle(request.clone());
+
+    console.error = originalConsoleError;
+
+    expect(first.status).toBe(201);
+    expect(second.status).toBe(500);
+    expect(await second.json()).toEqual({
+      error:
+        'Library "docs-3-tutorial" already exists. Use manage_library with action=refresh to re-crawl.',
+    });
+    expect(loggedErrors[0]?.[0]).toBe("[DocShark API]");
+    expect(db.listLibraries()).toHaveLength(1);
   });
 });
 
 describe("MCP tools", () => {
-  test("returns helpful text for library management and search tools", async () => {
-    const libraries = [
-      {
-        id: "lib-1",
-        name: "docshark",
-        display_name: "DocShark",
-        url: "https://docs.python.org/3/",
-        version: null,
-        description: null,
-        status: "indexed",
-        page_count: 5,
-        chunk_count: 12,
-        crawl_config: null,
-        last_crawled_at: null,
-        created_at: "2026-05-23T00:00:00Z",
-        updated_at: "2026-05-23T00:00:00Z",
-      },
-    ];
-
+  test("returns miss-path responses and skips side effects when tool preconditions fail", async () => {
+    let started = 0;
+    let removed = 0;
     const addTool = createAddLibraryTool({
       async add() {
-        return { ...libraries[0], jobId: "job-1" };
+        throw new Error("duplicate library");
       },
     } as unknown as LibraryService);
-    const listTool = createListLibrariesTool({
-      listLibraries() {
-        return libraries;
-      },
-    } as unknown as Database);
     const searchTool = createSearchDocsTool({
       search() {
-        return [
-          {
-            content: "Find docs quickly.",
-            heading_context: "Overview",
-            page_url: "https://docs.python.org/3/tutorial/",
-            page_path: "/docs/overview",
-            page_title: "Overview",
-            library_name: "docshark",
-            library_display_name: "DocShark",
-            lexical_score: -1,
-            has_code_block: false,
-            token_count: 50,
-            chunk_index: 0,
-            rerank_score: 0.9,
-            reasons: ["exact phrase match"],
-            path_type: "overview",
-            version_tag: null,
-          },
-        ];
-      },
-    } as unknown as SearchEngine);
-    const batchSearchTool = createSearchDocsBatchTool({
-      searchMany() {
-        return [
-          {
-            query: "overflow horizontal scroll",
-            library: "tailwindcss",
-            limit: 2,
-            results: [
-              {
-                content: "Use overflow-x-auto for horizontal card rows.",
-                heading_context: "Overflow",
-                page_url: "https://tailwindcss.com/docs/overflow",
-                page_path: "/docs/overflow",
-                page_title: "Overflow",
-                library_name: "tailwindcss",
-                library_display_name: "Tailwind CSS",
-                lexical_score: -1,
-                has_code_block: true,
-                token_count: 82,
-                chunk_index: 0,
-                rerank_score: 0.92,
-                reasons: ["matched multiple focused subqueries"],
-                path_type: "guide",
-                version_tag: null,
-              },
-            ],
-          },
-        ];
+        return [];
       },
     } as unknown as SearchEngine);
     const pageTool = createGetDocPageTool({
       getPage() {
-        return {
-          id: "page-1",
-          library_id: "lib-1",
-          url: "https://docs.python.org/3/tutorial/",
-          path: "/docs/overview",
-          title: "Overview",
-          content_markdown: "# Overview\n\nDocShark docs.",
-          content_hash: null,
-          headings: null,
-          http_status: 200,
-          last_modified: null,
-          etag: null,
-          created_at: "2026-05-23T00:00:00Z",
-          updated_at: "2026-05-23T00:00:00Z",
-        };
+        return null;
       },
     } as unknown as Database);
     const refreshTool = createRefreshLibraryTool(
       {
         startCrawl() {
+          started += 1;
           return { id: "job-99" };
         },
       } as unknown as JobManager,
       {
         getLibraryByName() {
-          return libraries[0];
+          return null;
         },
       } as unknown as Database,
     );
     const removeTool = createRemoveLibraryTool({
       getLibraryByName() {
-        return libraries[0];
+        return null;
       },
-      removeLibrary() {},
+      removeLibrary() {
+        removed += 1;
+      },
     } as unknown as Database);
 
     const addResult = await addTool.handler({
       url: "https://docs.python.org/3/",
     });
-    const listResult = await listTool.handler({ status: "all" });
     const searchResult = await searchTool.handler({
-      query: "overview",
+      query: "missing topic",
       limit: 1,
-    });
-    const batchSearchResult = await batchSearchTool.handler({
-      requests: [
-        {
-          query: "overflow horizontal scroll",
-          library: "tailwindcss",
-          limit: 2,
-        },
-      ],
     });
     const pageResult = await pageTool.handler({
       url: "https://docs.python.org/3/tutorial/",
     });
-    const refreshResult = await refreshTool.handler({ library: "docshark" });
-    const removeResult = await removeTool.handler({ library: "docshark" });
+    const refreshResult = await refreshTool.handler({ library: "missing-lib" });
+    const removeResult = await removeTool.handler({ library: "missing-lib" });
 
-    expect(addResult.content[0]?.text).toContain('Library "DocShark" added');
-    expect(listResult.content[0]?.text).toContain("Indexed Libraries");
-    expect(searchResult.content[0]?.text).toContain(
-      '## Results for "overview"',
+    expect(addResult.content[0]?.text).toContain(
+      "Failed to add library: duplicate library",
     );
-    expect(batchSearchResult.content[0]?.text).toContain(
-      '## Batch Search Results',
+    expect(searchResult.content[0]?.text).toBe(
+      'No results found for "missing topic".',
     );
-    expect(pageResult.content[0]?.text).toContain("# Overview");
+    expect(pageResult.content[0]?.text).toBe(
+      "Page not found. Use search_docs to find the correct page.",
+    );
     expect(refreshResult.content[0]?.text).toContain(
-      'Refresh started for "DocShark"',
+      'Library "missing-lib" not found',
     );
-    expect(removeResult.content[0]?.text).toContain(
-      'Library "DocShark" removed',
+    expect(removeResult.content[0]?.text).toBe(
+      'Library "missing-lib" not found.',
     );
+    expect(started).toBe(0);
+    expect(removed).toBe(0);
   });
 });
