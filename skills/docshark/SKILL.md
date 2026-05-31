@@ -1,60 +1,44 @@
 ---
 name: docshark
-description: Use when answering framework, library, SDK, or API documentation questions with DocShark MCP tools. Use for indexed-doc lookup, full-page retrieval, and library lifecycle operations.
+description: Use when answering framework, library, SDK, or API documentation questions with DocShark MCP tools, especially for indexed-doc search, full-page retrieval, and library lifecycle tasks.
 ---
 
 # DocShark MCP Usage
 
-## Overview
+Use DocShark in this exact order:
 
-Use DocShark as a tool-first docs workflow. Keep answers grounded in tool output, not model memory.
+1. `list_libraries` if coverage is unknown.
+2. `search_docs` for primary lookup (natural language queries).
+3. `get_doc_page` only when snippet context is not enough.
+4. `manage_library` for lifecycle operations.
 
-## Use These Tools
+## Current Tool Contract
 
-- `list_libraries` - discover what is indexed.
-- `search_docs` - primary natural-language search.
-- `search_docs_batch` - multiple related queries in one call.
-- `get_doc_page` - fetch full markdown for one page.
-- `manage_library` - lifecycle actions: `add`, `rename`, `refresh`, `remove`, `info`.
+- Read/search:
+  - `list_libraries`
+  - `search_docs`
+  - `search_docs_batch`
+  - `get_doc_page`
+- Lifecycle:
+  - `manage_library` with `action` in `add | rename | refresh | remove | info`
 
-Important: do not call `add_library`, `refresh_library`, or `remove_library`; those are not current tool names.
+Do not call deprecated/nonexistent tool names such as `add_library`, `refresh_library`, or `remove_library`.
 
-## Default Flow
+## manage_library Required Inputs
 
-1. Call `list_libraries` if library coverage is unknown.
-2. Call `search_docs` with a natural-language query.
-3. Call `get_doc_page` only when snippet context is insufficient.
-4. If docs are missing or stale, call `manage_library` with the correct `action`.
+- `add`: `url` (optional `name`, `version`, `max_depth`)
+- `refresh`: `library`
+- `remove`: `library`
+- `info`: `library`
+- `rename`: `current_name`, `new_name`
 
-## manage_library Quick Guide
+## Query Style
 
-- Add docs:
-  - `action: "add"`
-  - required: `url`
-  - optional: `name`, `version`, `max_depth`
-- Refresh docs:
-  - `action: "refresh"`
-  - required: `library`
-- Remove docs:
-  - `action: "remove"`
-  - required: `library`
-- Inspect one library:
-  - `action: "info"`
-  - required: `library`
-- Rename library:
-  - `action: "rename"`
-  - required: `current_name`, `new_name`
+- Use natural language: `SvelteKit form actions redirect after submit`
+- Avoid keyword fragments: `sveltekit form redirect`
 
-## Query Patterns
+## Output Rules
 
-Use natural language, not keyword fragments.
-
-- Good: `SvelteKit form actions redirect after submit`
-- Good: `TanStack Query cache invalidation guidance`
-- Weak: `sveltekit form redirect`
-
-## Response Rules
-
-- Cite what DocShark returned.
-- If no results, say so and refine query or library scope.
-- If library is missing, state that and use `manage_library` `action: "add"`.
+- Ground answers in tool output.
+- If nothing is found, say so and refine query/filter.
+- If a library is missing, use `manage_library` with `action: "add"`.
