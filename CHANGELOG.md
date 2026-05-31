@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.25](https://github.com/Michael-Obele/docshark/compare/v0.1.24...v0.1.25) (2026-05-31)
+
+
+### ♻️ Code Refactoring
+
+* **skills:** enhance descriptions and improve clarity in usage documentation ([5711871](https://github.com/Michael-Obele/docshark/commit/5711871795075f66263fa500873573bdbccd627b))
+* **skills:** streamline documentation and improve skill descriptions for clarity ([73d728c](https://github.com/Michael-Obele/docshark/commit/73d728c61bf7c561e4baa1a89c4d49c68304be1c))
+
 ## [0.1.24](https://github.com/Michael-Obele/docshark/compare/v0.1.23...v0.1.24) (2026-05-28)
 
 
