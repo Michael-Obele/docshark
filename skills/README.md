@@ -1,233 +1,84 @@
 # DocShark Agent Skills
 
-This directory contains reusable Agent Skills for the DocShark documentation indexing and search system.
+This repository ships two Agent Skills under `skills/`:
 
-## Available Skills
+- `docshark` - Use DocShark MCP tools for documentation lookup and library management.
+- `using-docshark` - Install, configure, and troubleshoot DocShark in local workflows.
 
-### 1. `docshark`
+## Standards Used
 
-**Search and manage documentation through DocShark MCP server**
+These skills follow the open Agent Skills specification used by the `skills` CLI and skills.sh:
 
-- **Purpose**: Documentation lookup, discovery, and library management
-- **Triggers**: Framework/library/API documentation questions, search, page retrieval
-- **Tools Used**: `list_libraries`, `search_docs`, `get_doc_page`, `add_library`, `refresh_library`, `remove_library`
-- **When to Use**:
-  - User asks about any framework, library, or API documentation
-  - Search results need full-page context
-  - Documentation sources need to be added, refreshed, or removed
+- Spec: https://github.com/agentskills/agentskills/blob/main/docs/specification.mdx
+- CLI: https://www.npmjs.com/package/skills
 
-**Files**:
+## Required Skill Format
 
-- `docshark/SKILL.md` — Decision flow, patterns, examples
-- `docshark/evals/` — Test cases for evaluation
-- `docshark/references/` — Additional guidance (optional)
-
-### 2. `using-docshark`
-
-**Set up, configure, and integrate DocShark locally**
-
-- **Purpose**: Installation, configuration, integration, and troubleshooting
-- **Triggers**: Setup questions, MCP client integration, Docker, configuration
-- **When to Use**:
-  - User wants to install DocShark locally
-  - Integration with Claude Desktop, VS Code, or Cursor
-  - Configuration of environment variables or documentation sources
-  - Troubleshooting crawling, search, or memory issues
-
-**Files**:
-
-- `using-docshark/SKILL.md` — Setup guide, config, troubleshooting
-- `using-docshark/evals/` — Test cases
-- `using-docshark/references/` — Additional setup guides
-
-## Installation
-
-You can install these skills directly into your AI coding assistant using the [skills.sh](https://skills.sh) CLI:
-
-```bash
-# Install the docshark tool usage skill
-npx skills add Michael-Obele/docshark --skill docshark
-
-# Install the docshark setup and config skill
-npx skills add Michael-Obele/docshark --skill using-docshark
-```
-
-### Installation by Code Editor
-
-The `npx skills add` command automatically detects your environment, but here is where the skills are stored in various AI code editors:
-
-- **Cursor**: Installed into the `.cursor/rules/` directory as `docshark.mdc`.
-- **Windsurf**: Appended to your project's `.windsurfrules` file.
-- **VS Code (Cline / Roo Code)**: Injected into `.clinerules` or `.roomodes`.
-- **VS Code (GitHub Copilot)**: Injected into `.github/copilot-instructions.md`.
-- **Trae IDE**: Installed into the `.trae/skills/` directory.
-
----
-
-## Directory Structure
-
-```
-skills/
-├── docshark/
-│   ├── SKILL.md                 # Main skill definition
-│   ├── evals/                   # Evaluation test cases
-│   └── references/              # Additional resources
-│
-├── using-docshark/
-│   ├── SKILL.md                 # Installation & config guide
-│   ├── evals/                   # Test cases
-│   └── references/              # Setup references
-│
-├── VALIDATION_CHECKLIST.md      # Pre-publishing validation
-└── README.md                    # This file
-```
-
-## Publishing Skills to skills.sh/
-
-To publish these skills to the [Agent Skills Directory](https://skills.sh/):
-
-### Quick Start
-
-```bash
-# 1. Validate locally
-gh skill publish --dry-run
-
-# 2. Publish (interactive)
-gh skill publish
-
-# 3. Verify on skills.sh (5-10 minutes)
-# Visit: https://skills.sh/?search=docshark
-```
-
-### Full Instructions
-
-See [PUBLISHING_SKILLS.md](../../PUBLISHING_SKILLS.md) for:
-
-- Step-by-step publishing guide
-- Troubleshooting common issues
-- Version management and CI/CD integration
-- Verification after publishing
-
-### Pre-Publishing Checklist
-
-See [VALIDATION_CHECKLIST.md](./VALIDATION_CHECKLIST.md) for:
-
-- Required frontmatter fields
-- Directory naming rules
-- Content quality standards
-- Manual validation commands
-
-## Skill Metadata Requirements
-
-### Frontmatter Format
-
-Each SKILL.md must start with valid YAML:
+Each skill lives in its own directory and must include `SKILL.md` with YAML frontmatter:
 
 ```yaml
 ---
 name: skill-name
-description: "Clear description with action verbs. Use this skill when the user..."
+description: What the skill does and when to use it.
 ---
 ```
 
-### Key Rules
+Validation-critical rules:
 
-- ✅ `name:` must match directory name
-- ✅ `description:` must be 150+ characters and include "Use this skill when"
-- ✅ `allowed-tools:` (if present) must be a string: `"tool1, tool2"` not `["tool1", "tool2"]`
-- ✅ No install metadata (`metadata.github-*`)
-- ✅ Valid YAML syntax
+- `name` must match the parent directory exactly.
+- `name` must be lowercase letters, numbers, and hyphens only.
+- `description` must be non-empty and explain both behavior and trigger context.
+- Optional `allowed-tools` is experimental and, if used, should be a space-separated string.
 
-## Best Practices
+## Local Validation
 
-### Skill Design
+From repo root:
 
-1. **Clear Triggering**: Describe exactly when the skill should be used
-2. **Actionable Content**: Provide workflows, examples, decision flows
-3. **Error Handling**: Include troubleshooting section
-4. **Tested Patterns**: Use examples from real user workflows
-5. **Progressive Disclosure**: Keep SKILL.md under 500 lines; link to references for deep content
+```bash
+# Discover skills in this repo
+npx skills add . --list
 
-### Content Patterns
+# Install one skill locally for testing
+npx skills add . --skill docshark -y
 
-- **Decision flows**: Numbered steps for common workflows
-- **Code examples**: Real, executable examples
-- **Best practices**: ✅ good vs ❌ bad patterns
-- **Troubleshooting**: Common issues with solutions
-- **References**: Links to external docs
-
-## Updating Skills
-
-When you modify or enhance a skill:
-
-1. Update `SKILL.md` with new content
-2. Add/update test cases in `evals/`
-3. Run validation: `gh skill publish --dry-run`
-4. Publish new version:
-   ```bash
-   gh skill publish --tag v1.0.1  # patch
-   gh skill publish --tag v1.1.0  # minor
-   ```
-
-## Integration Examples
-
-### Claude Desktop
-
-```json
-{
-  "mcpServers": {
-    "docshark": {
-      "command": "npx",
-      "args": ["docshark", "--stdio"]
-    }
-  }
-}
+# Install both skills locally for testing
+npx skills add . --skill '*' -y
 ```
 
-### VS Code + Copilot
+## Installation From GitHub
 
-```json
-{
-  "copilot.mcp.enabled": true,
-  "copilot.mcp.mcpServers": {
-    "docshark": {
-      "command": "npx",
-      "args": ["docshark", "--stdio"]
-    }
-  }
-}
+```bash
+# Install specific skill
+npx skills add Michael-Obele/docshark --skill docshark
+npx skills add Michael-Obele/docshark --skill using-docshark
+
+# List discoverable skills in the repo
+npx skills add Michael-Obele/docshark --list
 ```
 
-## Metrics & Feedback
+## skills.sh Discovery
 
-After publishing on skills.sh/:
+There is no separate manual publish command in this workflow.
 
-- **View installs**: Check GitHub release downloads
-- **Monitor feedback**: Watch GitHub issues and discussions
-- **Gather signals**: Use `/eval` to benchmark skill performance
-- **Iterate**: Create new versions based on user feedback
+To be discoverable:
 
-## Contributing
+1. Keep the repo public.
+2. Keep skill directories valid (`skills/<name>/SKILL.md` with valid frontmatter).
+3. Install/share using `npx skills add owner/repo ...`.
+4. Check listing on https://skills.sh/Michael-Obele/docshark.
 
-To add new DocShark-related skills:
+As installs occur through the `skills` CLI, usage telemetry drives visibility/ranking on skills.sh.
 
-1. Create directory: `skills/new-skill-name/`
-2. Create `SKILL.md` with required frontmatter
-3. Add test cases to `evals/`
-4. Run validation: `gh skill publish --dry-run`
-5. Submit PR with new skill
-6. Publish via `gh skill publish` once merged
+## Directory Layout
 
-## References
-
-- [skills.sh](https://skills.sh/) — Agent Skills Directory
-- [gh CLI: skill publish](https://cli.github.com/manual/gh_skill_publish) — Publishing documentation
-- [PUBLISHING_SKILLS.md](../../PUBLISHING_SKILLS.md) — DocShark publishing guide
-- [VALIDATION_CHECKLIST.md](./VALIDATION_CHECKLIST.md) — Pre-publish validation
-
-## Status
-
-- ✅ `docshark` — Complete and ready to publish
-- ✅ `using-docshark` — Complete and ready to publish
-- 📋 Both skills pass validation checks
-- 🚀 Ready for: `gh skill publish`
+```text
+skills/
+  docshark/
+    SKILL.md
+    evals/
+    references/
+  using-docshark/
+    SKILL.md
+    evals/
+    references/
+```
