@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.27](https://github.com/Michael-Obele/docshark/compare/v0.1.26...v0.1.27) (2026-09-24)
+
+
+### ✨ Features
+
+* **icons:** add configurable icon styles via DOCSHARK_ICONS ([3455732](https://github.com/Michael-Obele/docshark/commit/3455732c78d497db89ba8b6ae6a06343bc2ce3e9))
+
 ## [0.1.26](https://github.com/Michael-Obele/docshark/compare/v0.1.25...v0.1.26) (2026-09-24)
 
 
