@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.26](https://github.com/Michael-Obele/docshark/compare/v0.1.25...v0.1.26) (2026-09-24)
+
+
+### ✨ Features
+
+* **cli:** add `docshark stale` command to refresh outdated libraries ([57f1bb9](https://github.com/Michael-Obele/docshark/commit/57f1bb96b7b20cd17fadd0950071e783a13ee2c0))
+
+
+### 🧹 Chores & Maintenance
+
+* **gitignore:** add plans, research, docs-mcp to ignore ([c219092](https://github.com/Michael-Obele/docshark/commit/c21909262b1ddedfe6c40865b2cdfc6918b97cf9))
+
 ## [0.1.25](https://github.com/Michael-Obele/docshark/compare/v0.1.24...v0.1.25) (2026-05-31)
 
 
