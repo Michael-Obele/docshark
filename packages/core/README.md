@@ -90,6 +90,16 @@ Interactive CLI runs will also let you know when a newer version is available. U
 
 Interactive `docshark list` and `docshark stale` runs also check library freshness: anything not crawled in the last **14 days** (configurable via `DOCSHARK_STALE_DAYS`) is listed with its age, followed by `Refresh N stale libraries now? [y/N]` — answering `y` re-crawls them all. Skip it with `docshark list --no-stale-check`, disable it entirely with `DOCSHARK_DISABLE_STALE_CHECK=1`, and note that non-interactive runs (pipes, CI) never prompt. AIs see the same signal over MCP via the Age/⚠️ columns of `list_libraries` and `manage_library action=stale`.
 
+### Icon styles
+
+DocShark's CLI uses emoji icons by default. If your terminal uses a [Nerd Font](https://www.nerdfonts.com/), you can switch to crisp monochrome glyphs — or to plain Unicode, or no icons at all:
+
+```bash
+export DOCSHARK_ICONS=nerd   # emoji (default) | nerd | plain | none
+```
+
+The `nerd` style uses Material Design Icons glyphs from Nerd Fonts; if your main font lacks them, install the Symbols Nerd Font Mono font from [nerdfonts.com/font-downloads](https://www.nerdfonts.com/font-downloads) as a fallback. MCP tool output always keeps emoji, since AI chat clients render those reliably.
+
 For scripts, `docshark update --check` exits `0` when current, `10` when a newer version is available, and `1` when the version check could not be completed.
 
 ## 🔌 MCP Integration

@@ -8,6 +8,7 @@ import { fetchPage } from '../scraper/fetcher.js';
 import { extractAndConvert } from '../processor/extractor.js';
 import { chunkMarkdown } from '../processor/chunker.js';
 import { RateLimiter } from '../scraper/rate-limiter.js';
+import { icon } from '../icons.js';
 import type { CrawlConfig } from '../types.js';
 
 export class CrawlWorker {
@@ -131,13 +132,13 @@ export class CrawlWorker {
 
             this.eventBus.emit('crawl:complete', { jobId, libraryId, crawled, failed, totalChunks });
             console.log(
-                `[DocShark] ✅ Crawl complete: ${crawled} pages, ${totalChunks} chunks, ${failed} failed`,
+                `[DocShark] ${icon('check')}Crawl complete: ${crawled} pages, ${totalChunks} chunks, ${failed} failed`,
             );
         } catch (err: any) {
             this.db.updateLibraryStatus(libraryId, 'error');
             this.db.updateJob(jobId, { status: 'failed', error_message: err.message });
             this.eventBus.emit('crawl:error', { jobId, libraryId, error: err.message });
-            console.error(`[DocShark] ❌ Crawl failed for "${lib.display_name}":`, err.message);
+            console.error(`[DocShark] ${icon('cross')}Crawl failed for "${lib.display_name}":`, err.message);
         }
     }
 }

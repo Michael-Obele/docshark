@@ -17,6 +17,7 @@ import {
   getStaleDays,
   isStaleLibrary,
 } from "./stale.js";
+import { icon } from "./icons.js";
 import { VERSION } from "./version.js";
 
 const useColor = process.stdout.isTTY;
@@ -146,14 +147,16 @@ cli
         version: opts.libVersion,
         maxDepth: parseInt(opts.depth),
       });
-      console.log(`\n✅ Added "${lib.display_name}" — crawling ${lib.url}...`);
+      console.log(
+        `\n${icon("check")}Added "${lib.display_name}" — crawling ${lib.url}...`,
+      );
       console.log(`   Job ID: ${lib.jobId}`);
       console.log(`   Use "docshark list" to check progress.\n`);
 
       // Wait for the crawl to finish
       await waitForCrawl(lib.jobId);
     } catch (err: any) {
-      console.error(`\n❌ ${err.message}\n`);
+      console.error(`\n${icon("cross")}${err.message}\n`);
       process.exit(1);
     }
   });
@@ -180,11 +183,11 @@ cli
     try {
       const library = libraryService.rename({ currentName, newName });
       console.log(
-        `\n✅ Renamed library to "${library.display_name}" (${library.name}).\n`,
+        `\n${icon("check")}Renamed library to "${library.display_name}" (${library.name}).\n`,
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      console.error(`\n❌ ${message}\n`);
+      console.error(`\n${icon("cross")}${message}\n`);
       process.exit(1);
     }
   });
@@ -221,7 +224,7 @@ cli
     await maybeNotifyForCommand("search-batch");
 
     if (!Array.isArray(queries) || queries.length === 0) {
-      console.error("\n❌ Please provide at least one query.\n");
+      console.error(`\n${icon("cross")}Please provide at least one query.\n`);
       process.exit(1);
     }
 
@@ -291,9 +294,7 @@ cli
     db.init();
 
     if (isStaleCheckDisabled()) {
-      console.log(
-        "\nStale check disabled via DOCSHARK_DISABLE_STALE_CHECK.\n",
-      );
+      console.log("\nStale check disabled via DOCSHARK_DISABLE_STALE_CHECK.\n");
       return;
     }
 
@@ -304,7 +305,7 @@ cli
 
     if (count === 0) {
       console.log(
-        `\n✅ All libraries were crawled within the last ${days} days.\n`,
+        `\n${icon("check")}All libraries were crawled within the last ${days} days.\n`,
       );
     }
   });
@@ -323,12 +324,12 @@ cli
       const job = jobManager.startCrawl(lib.id, { incremental: true });
 
       console.log(
-        `\n🔄 Refreshing "${lib.display_name}" — crawling ${lib.url}...`,
+        `\n${icon("refresh")}Refreshing "${lib.display_name}" — crawling ${lib.url}...`,
       );
       console.log(`   Job ID: ${job.id}`);
       await waitForCrawl(job.id);
     } catch (err: any) {
-      console.error(`\n❌ ${err.message}\n`);
+      console.error(`\n${icon("cross")}${err.message}\n`);
       process.exit(1);
     }
   });
@@ -345,10 +346,10 @@ cli
       if (!lib) throw new Error(`Library "${name}" not found.`);
       db.removeLibrary(lib.id);
       console.log(
-        `\n🗑️ Removed library "${lib.display_name}". Deleted ${lib.page_count} pages.\n`,
+        `\n${icon("trash")}Removed library "${lib.display_name}". Deleted ${lib.page_count} pages.\n`,
       );
     } catch (err: any) {
-      console.error(`\n❌ ${err.message}\n`);
+      console.error(`\n${icon("cross")}${err.message}\n`);
       process.exit(1);
     }
   });
@@ -366,14 +367,14 @@ cli
 
     if (!url && (!opts.library || !opts.path)) {
       console.error(
-        `\n❌ Please provide either a URL, or both --library and --path\n`,
+        `\n${icon("cross")}Please provide either a URL, or both --library and --path\n`,
       );
       process.exit(1);
     }
     db.init();
     const page = db.getPage({ url, library: opts.library, path: opts.path });
     if (!page) {
-      console.error(`\n❌ Page not found in index.\n`);
+      console.error(`\n${icon("cross")}Page not found in index.\n`);
       process.exit(1);
     }
     console.log(`\n--- ${page.title} ---`);
@@ -447,7 +448,7 @@ cli
     db.init();
     const lib = db.getLibraryByName(name);
     if (!lib) {
-      console.error(`\n❌ Library not found: ${name}\n`);
+      console.error(`\n${icon("cross")}Library not found: ${name}\n`);
       process.exit(1);
     }
     console.log(`\n--- Library: ${lib.display_name} (${lib.name}) ---`);
@@ -459,7 +460,7 @@ cli
     if (isStaleLibrary(lib)) {
       const age = daysSinceCrawl(lib.last_crawled_at);
       console.log(
-        `⚠️ Stale: not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — run "docshark refresh ${lib.name}".`,
+        `${icon("warn")}Stale: not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — run "docshark refresh ${lib.name}".`,
       );
     }
 
@@ -495,13 +496,13 @@ async function waitForCrawl(jobId: string): Promise<void> {
       if (!job || job.status === "completed" || job.status === "failed") {
         if (job?.status === "completed") {
           console.log(
-            `\n🦈 Crawl complete: ${job.pages_crawled} pages, ${job.chunks_created} chunks indexed.`,
+            `\n${icon("shark")}Crawl complete: ${job.pages_crawled} pages, ${job.chunks_created} chunks indexed.`,
           );
           if (job.pages_failed > 0) {
-            console.log(`   ⚠️  ${job.pages_failed} pages failed.`);
+            console.log(`   ${icon("warn")}${job.pages_failed} pages failed.`);
           }
         } else if (job?.status === "failed") {
-          console.error(`\n❌ Crawl failed: ${job.error_message}`);
+          console.error(`\n${icon("cross")}Crawl failed: ${job.error_message}`);
         }
         resolve();
         return;
@@ -553,7 +554,9 @@ async function maybePromptStaleRefresh(opts: {
   }
 
   const plural = stale.length === 1 ? "library has" : "libraries have";
-  console.error(`\n⚠️  ${stale.length} ${plural} not been crawled in ${days}+ days:`);
+  console.error(
+    `\n${icon("warn")}${stale.length} ${plural} not been crawled in ${days}+ days:`,
+  );
   for (const lib of stale) {
     console.error(`   • ${formatStaleLibrary(lib)}`);
   }
@@ -583,20 +586,20 @@ async function maybePromptStaleRefresh(opts: {
   for (const [index, lib] of stale.entries()) {
     if (jobManager.isRunning(lib.id)) {
       console.error(
-        `\n⏭️  ${lib.display_name} is already being crawled — skipping.`,
+        `\n${icon("skip")}${lib.display_name} is already being crawled — skipping.`,
       );
       continue;
     }
     const job = jobManager.startCrawl(lib.id, { incremental: true });
     refreshed += 1;
     console.error(
-      `\n🔄 Refreshing ${lib.display_name} (${index + 1}/${stale.length}) — job ${job.id}`,
+      `\n${icon("refresh")}Refreshing ${lib.display_name} (${index + 1}/${stale.length}) — job ${job.id}`,
     );
     await waitForCrawl(job.id);
   }
 
   console.error(
-    `\n✅ Refreshed ${refreshed} ${refreshed === 1 ? "library" : "libraries"}.\n`,
+    `\n${icon("check")}Refreshed ${refreshed} ${refreshed === 1 ? "library" : "libraries"}.\n`,
   );
   return stale.length;
 }
@@ -613,7 +616,7 @@ function printStaleHint(): void {
   const names = stale.map((lib) => lib.name).join(", ");
   console.error(
     paint(
-      `⚠️  ${stale.length} ${stale.length === 1 ? "library is" : "libraries are"} older than ${getStaleDays()} days: ${names} — run "docshark stale" to review and refresh.\n`,
+      `${icon("warn")}${stale.length} ${stale.length === 1 ? "library is" : "libraries are"} older than ${getStaleDays()} days: ${names} — run "docshark stale" to review and refresh.\n`,
       color.yellow,
     ),
   );
@@ -733,7 +736,7 @@ function printCommandHelp(commandName: string): void {
 function printHeader(): void {
   console.log();
   console.log(
-    `${paint("🦈 DocShark", color.cyan)}  ${paint("Documentation MCP Server", color.bold)}`,
+    `${paint(`${icon("shark")}DocShark`, color.cyan)}  ${paint("Documentation MCP Server", color.bold)}`,
   );
   console.log(
     `   ${paint("Scrape • Index • Search any docs site", color.dim)}\n`,
@@ -755,6 +758,6 @@ function handleCliError(error: unknown): never {
     ? "Too many arguments passed. Run `docshark help <command>` for usage."
     : message;
 
-  console.error(`\n❌ ${prettyMessage}\n`);
+  console.error(`\n${icon("cross")}${prettyMessage}\n`);
   process.exit(1);
 }

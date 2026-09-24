@@ -71,6 +71,15 @@ HTTP endpoints:
   `list_libraries` and `manage_library action=stale`, so an assistant can tell
   the user which docs are outdated and refresh them after agreement.
 
+## Icon Styles
+
+- `DOCSHARK_ICONS=emoji|nerd|plain|none` (default `emoji`) controls CLI icon rendering.
+- `nerd` = crisp monochrome glyphs from Nerd Fonts (Material Design Icons set);
+  requires a Nerd Font-patched terminal font — otherwise glyphs show as boxes.
+- `plain` = common-monospace Unicode (`✓ ✗ ⚠ ↻ …`); `none` = text only (good for logs).
+- Unknown values fall back to `emoji`. MCP tool output is always emoji, since AI
+  chat clients render those reliably — the env var only affects terminal output.
+
 ## Troubleshooting
 
 - Docs seem outdated / answers look wrong:

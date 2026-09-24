@@ -2,6 +2,7 @@
 import * as cheerio from 'cheerio';
 import { getRobotsParser, isAllowed } from './robots.js';
 import { RateLimiter } from './rate-limiter.js';
+import { icon } from '../icons.js';
 import type { CrawlConfig } from '../types.js';
 
 const USER_AGENT = 'DocShark/1.0';
@@ -47,7 +48,7 @@ export async function discoverPages(
     // ────────────────────────────────────────────
     const sitemapUrls = await discoverFromSitemap(baseUrl, robots);
     if (sitemapUrls.length > 0) {
-        console.log(`[DocShark] ✅ Found ${sitemapUrls.length} URLs from sitemap`);
+        console.log(`[DocShark] ${icon('check')}Found ${sitemapUrls.length} URLs from sitemap`);
         return filterUrls(sitemapUrls, baseUrl, config, robots);
     }
 
@@ -56,7 +57,7 @@ export async function discoverPages(
     // ────────────────────────────────────────────
     const llmsUrls = await discoverFromLlmsTxt(baseUrl);
     if (llmsUrls.length > 0) {
-        console.log(`[DocShark] ✅ Found ${llmsUrls.length} URLs from llms.txt`);
+        console.log(`[DocShark] ${icon('check')}Found ${llmsUrls.length} URLs from llms.txt`);
         return filterUrls(llmsUrls, baseUrl, config, robots);
     }
 
@@ -66,7 +67,7 @@ export async function discoverPages(
     console.log(`[DocShark] No sitemap or llms.txt. Trying navigation-aware discovery...`);
     const navUrls = await discoverFromNavigation(baseUrl, config, robots);
     if (navUrls.length > 0) {
-        console.log(`[DocShark] ✅ Found ${navUrls.length} URLs from page navigation`);
+        console.log(`[DocShark] ${icon('check')}Found ${navUrls.length} URLs from page navigation`);
 
         // Enrich: BFS crawl from discovered nav URLs to find nested pages
         const enrichedUrls = await enrichWithBfsCrawl(

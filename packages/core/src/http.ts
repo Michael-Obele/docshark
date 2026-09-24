@@ -4,6 +4,7 @@ import { HttpTransport } from '@tmcp/transport-http';
 import { SseTransport } from '@tmcp/transport-sse';
 import { server, eventBus, db, searchEngine, jobManager, libraryService } from './server.js';
 import { createApiRouter } from './api/router.js';
+import { icon } from './icons.js';
 import { VERSION } from './version.js';
 
 export async function startHttpServer(port: number) {
@@ -56,7 +57,7 @@ export async function startHttpServer(port: number) {
         },
     });
 
-    console.log(`\n🦈 DocShark running on http://localhost:${port}`);
+    console.log(`\n${icon('shark')}DocShark running on http://localhost:${port}`);
     console.log(`   MCP (HTTP):  http://localhost:${port}/mcp`);
     console.log(`   MCP (SSE):   http://localhost:${port}/sse`);
     console.log(`   REST API:    http://localhost:${port}/api`);
