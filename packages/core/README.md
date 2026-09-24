@@ -76,6 +76,9 @@ After installation, you can use the `docshark` command:
 ```bash
 docshark list
 
+# List libraries not crawled in 14+ days and refresh them interactively
+docshark stale
+
 # Update the global Bun installation when a new release is published
 docshark update
 
@@ -84,6 +87,8 @@ docshark update --check --quiet
 ```
 
 Interactive CLI runs will also let you know when a newer version is available. Update notices are intentionally skipped for MCP `stdio` mode so they never interfere with protocol output.
+
+Interactive `docshark list` and `docshark stale` runs also check library freshness: anything not crawled in the last **14 days** (configurable via `DOCSHARK_STALE_DAYS`) is listed with its age, followed by `Refresh N stale libraries now? [y/N]` — answering `y` re-crawls them all. Skip it with `docshark list --no-stale-check`, disable it entirely with `DOCSHARK_DISABLE_STALE_CHECK=1`, and note that non-interactive runs (pipes, CI) never prompt. AIs see the same signal over MCP via the Age/⚠️ columns of `list_libraries` and `manage_library action=stale`.
 
 For scripts, `docshark update --check` exits `0` when current, `10` when a newer version is available, and `1` when the version check could not be completed.
 

@@ -172,6 +172,18 @@ export class Database {
       .all() as Library[];
   }
 
+  /** Indexed libraries whose last crawl is older than `days` days (never-crawled included, oldest first). */
+  listStaleLibraries(days: number): Library[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM libraries
+         WHERE status = 'indexed'
+           AND (last_crawled_at IS NULL OR last_crawled_at <= datetime('now', ?))
+         ORDER BY last_crawled_at ASC`,
+      )
+      .all(`-${Math.trunc(days)} days`) as Library[];
+  }
+
   getLibraryByName(name: string): Library | undefined {
     return this.db
       .prepare("SELECT * FROM libraries WHERE name = ?")

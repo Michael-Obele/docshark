@@ -18,6 +18,18 @@
       "prompt": "Search the indexed docs for TanStack Query cache invalidation guidance. If the first search is ambiguous, refine it instead of guessing.",
       "expected_output": "The agent uses search_docs with a natural-language query, avoids premature full-page reads, and refines the search or adds a library filter only after discovery.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Are my indexed docs up to date? If anything is outdated, tell me what is stale and how old it is before fixing anything.",
+      "expected_output": "The agent checks staleness via manage_library with action=stale (or the Age/⚠️ columns from list_libraries), reports each stale library with its age, and asks the user before running action=refresh.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Answer this from the indexed docs, then tell me whether the source can be trusted to be current.",
+      "expected_output": "The agent answers from search_docs/get_doc_page, then checks the library's freshness (list_libraries Age column or manage_library action=stale) and adds a one-line caveat plus a refresh offer if the library is stale (14+ days).",
+      "files": []
     }
   ]
 }

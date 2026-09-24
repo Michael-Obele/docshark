@@ -67,19 +67,24 @@ Agent needs info about a library
 ```typescript
 server.tool(
   {
-    name: 'search_docs',
+    name: "search_docs",
     description:
-      'Search through indexed documentation libraries for relevant information. ' +
-      'Returns ranked documentation sections with code examples and source URLs. ' +
-      'Use this when you need to find information about a library, framework, API, ' +
-      'or any technical concept. You can optionally filter by a specific library name.',
+      "Search through indexed documentation libraries for relevant information. " +
+      "Returns ranked documentation sections with code examples and source URLs. " +
+      "Use this when you need to find information about a library, framework, API, " +
+      "or any technical concept. You can optionally filter by a specific library name.",
     schema: v.object({
       query: v.pipe(
         v.string(),
-        v.description('The search query. Use natural language or specific terms.')
+        v.description(
+          "The search query. Use natural language or specific terms.",
+        ),
       ),
       library: v.optional(
-        v.pipe(v.string(), v.description('Filter results to a specific library name.')),
+        v.pipe(
+          v.string(),
+          v.description("Filter results to a specific library name."),
+        ),
       ),
       limit: v.optional(
         v.pipe(
@@ -87,7 +92,7 @@ server.tool(
           v.integer(),
           v.minValue(1),
           v.maxValue(20),
-          v.description('Max results to return. Default: 5.')
+          v.description("Max results to return. Default: 5."),
         ),
         5,
       ),
@@ -101,7 +106,8 @@ server.tool(
 ```
 
 **Output format:**
-```
+
+````
 ## Results for "svelte transitions"
 
 ### 1. Transitions — Svelte 5 Documentation
@@ -121,22 +127,24 @@ Svelte provides several built-in transition functions:
 {#if visible}
   <div transition:fade>fades in and out</div>
 {/if}
-```
+````
 
 ---
 
 ### 2. Custom transitions — Svelte 5 Documentation
+
 **Source:** https://svelte.dev/docs/svelte/transition#Custom-transitions
 **Section:** Transitions > Custom transitions
 
 You can create custom transitions by defining a function...
-```
+
+````
 
 ---
 
 ## Tool 2: `list_libraries`
 
-**Purpose:** Discovery tool. Shows what documentation is currently indexed and available.
+**Purpose:** Discovery tool. Shows what documentation is currently indexed and available, how old each index is, and which libraries are **stale**.
 
 ```typescript
 server.tool(
@@ -161,9 +169,10 @@ server.tool(
     return tool.text(formatLibraryList(libraries));
   },
 );
-```
+````
 
 **Output format:**
+
 ```
 ## Indexed Libraries (4 total)
 
@@ -184,31 +193,37 @@ server.tool(
 ```typescript
 server.tool(
   {
-    name: 'get_doc_page',
+    name: "get_doc_page",
     description:
-      'Retrieve the complete content of a specific documentation page as markdown. ' +
-      'Use this when search results reference a page and you need the full context, ' +
-      'or when you know the exact page URL. Returns the entire page content.',
+      "Retrieve the complete content of a specific documentation page as markdown. " +
+      "Use this when search results reference a page and you need the full context, " +
+      "or when you know the exact page URL. Returns the entire page content.",
     schema: v.object({
       url: v.optional(
-        v.pipe(v.string(), v.url(), v.description('The full URL of the documentation page.')),
+        v.pipe(
+          v.string(),
+          v.url(),
+          v.description("The full URL of the documentation page."),
+        ),
       ),
       library: v.optional(
-        v.pipe(v.string(), v.description('Library name to search within.')),
+        v.pipe(v.string(), v.description("Library name to search within.")),
       ),
       path: v.optional(
         v.pipe(
           v.string(),
-          v.description('Relative path within the library (e.g., "/getting-started").')
+          v.description(
+            'Relative path within the library (e.g., "/getting-started").',
+          ),
         ),
       ),
     }),
   },
   async ({ url, library, path }) => {
     const page = await storage.getPage({ url, library, path });
-    if (!page) return tool.text('Page not found.');
+    if (!page) return tool.text("Page not found.");
     return tool.text(
-      `# ${page.title}\n**Source:** ${page.url}\n\n${page.content_markdown}`
+      `# ${page.title}\n**Source:** ${page.url}\n\n${page.content_markdown}`,
     );
   },
 );
@@ -223,28 +238,31 @@ server.tool(
 ```typescript
 server.tool(
   {
-    name: 'add_library',
+    name: "add_library",
     description:
-      'Add a new documentation library to be crawled and indexed for searching. ' +
-      'Provide the documentation website URL and an optional name. ' +
-      'The library will be crawled in the background. ' +
-      'Use list_libraries to check crawl progress.',
+      "Add a new documentation library to be crawled and indexed for searching. " +
+      "Provide the documentation website URL and an optional name. " +
+      "The library will be crawled in the background. " +
+      "Use list_libraries to check crawl progress.",
     schema: v.object({
       url: v.pipe(
         v.string(),
         v.url(),
-        v.description('The base URL of the documentation website to crawl.')
+        v.description("The base URL of the documentation website to crawl."),
       ),
       name: v.optional(
         v.pipe(
           v.string(),
           v.description(
-            'A short identifier for the library (e.g., "svelte-5"). Auto-generated from URL if omitted.'
-          )
+            'A short identifier for the library (e.g., "svelte-5"). Auto-generated from URL if omitted.',
+          ),
         ),
       ),
       version: v.optional(
-        v.pipe(v.string(), v.description('Version string (e.g., "5.0.0", "v4").')),
+        v.pipe(
+          v.string(),
+          v.description('Version string (e.g., "5.0.0", "v4").'),
+        ),
       ),
       max_depth: v.optional(
         v.pipe(
@@ -252,18 +270,23 @@ server.tool(
           v.integer(),
           v.minValue(1),
           v.maxValue(10),
-          v.description('Maximum link depth to crawl. Default: 3.')
+          v.description("Maximum link depth to crawl. Default: 3."),
         ),
         3,
       ),
     }),
   },
   async ({ url, name, version, max_depth }) => {
-    const library = await libraryService.addLibrary({ url, name, version, maxDepth: max_depth });
+    const library = await libraryService.addLibrary({
+      url,
+      name,
+      version,
+      maxDepth: max_depth,
+    });
     const job = await jobManager.startCrawl(library.id);
     return tool.text(
       `✅ Library "${library.display_name}" added.\n` +
-      `Crawl job ${job.id} started. Use list_libraries to check progress.`
+        `Crawl job ${job.id} started. Use list_libraries to check progress.`,
     );
   },
 );
@@ -278,25 +301,28 @@ server.tool(
 ```typescript
 server.tool(
   {
-    name: 'refresh_library',
+    name: "refresh_library",
     description:
-      'Re-crawl and re-index an existing documentation library to get the latest content. ' +
-      'Use this when documentation may have been updated since it was last indexed. ' +
-      'Only re-fetches pages that have changed (via HTTP ETags/Last-Modified).',
+      "Re-crawl and re-index an existing documentation library to get the latest content. " +
+      "Use this when documentation may have been updated since it was last indexed. " +
+      "Only re-fetches pages that have changed (via HTTP ETags/Last-Modified).",
     schema: v.object({
       library: v.pipe(
         v.string(),
-        v.description('The library name to refresh (e.g., "svelte-5").')
+        v.description('The library name to refresh (e.g., "svelte-5").'),
       ),
     }),
   },
   async ({ library }) => {
     const lib = await storage.getLibraryByName(library);
-    if (!lib) return tool.text(`Library "${library}" not found. Use list_libraries to see available.`);
+    if (!lib)
+      return tool.text(
+        `Library "${library}" not found. Use list_libraries to see available.`,
+      );
     const job = await jobManager.startCrawl(lib.id, { incremental: true });
     return tool.text(
       `🔄 Refresh started for "${lib.display_name}".\n` +
-      `Job ${job.id}: checking for updated pages...`
+        `Job ${job.id}: checking for updated pages...`,
     );
   },
 );
@@ -311,15 +337,15 @@ server.tool(
 ```typescript
 server.tool(
   {
-    name: 'remove_library',
+    name: "remove_library",
     description:
-      'Remove a documentation library and all its indexed content. ' +
-      'This permanently deletes the library, its pages, and search index. ' +
-      'Use list_libraries first to confirm the library name.',
+      "Remove a documentation library and all its indexed content. " +
+      "This permanently deletes the library, its pages, and search index. " +
+      "Use list_libraries first to confirm the library name.",
     schema: v.object({
       library: v.pipe(
         v.string(),
-        v.description('The library name to remove (e.g., "svelte-5").')
+        v.description('The library name to remove (e.g., "svelte-5").'),
       ),
     }),
   },
@@ -329,11 +355,52 @@ server.tool(
     await storage.removeLibrary(lib.id);
     return tool.text(
       `🗑️ Library "${lib.display_name}" removed.\n` +
-      `Deleted ${lib.page_count} pages and ${lib.chunk_count} search chunks.`
+        `Deleted ${lib.page_count} pages and ${lib.chunk_count} search chunks.`,
     );
   },
 );
 ```
+
+---
+
+## Staleness & Refresh Prompts (current state)
+
+**Why:** stale docs are the #1 source of confidently-wrong answers — in a 2026
+Slite survey of 143 leaders, 76% had an AI tool surface an outdated doc and
+produce a wrong answer. DocShark therefore treats freshness as a first-class,
+both-sided signal: humans get prompted in the CLI, assistants get it in tool
+output.
+
+**Freshness window:** a library is _stale_ when it has not been crawled in
+**14 days** (2 weeks). Tunable via `DOCSHARK_STALE_DAYS`, the `days` parameter
+on `manage_library action=stale`, or `docshark stale --days <n>` (clamped
+1–365). Derived from `libraries.last_crawled_at` — no schema change.
+
+**MCP side (what the AI knows):**
+
+- `list_libraries` adds **Last Crawled** and **Age** columns, marks stale rows
+  with `⚠️`, and appends a footer instructing the assistant to tell the user
+  which libraries are stale and offer a refresh.
+- `manage_library` gains `action: "stale"` (optional `days`) returning a table
+  of stale libraries with last-crawl dates and ages, plus explicit guidance:
+  _tell the user, ask, and only call `action=refresh` per library after
+  agreement._
+- `manage_library action=info` appends a `**Stale:**` line when the library is
+  outside the window.
+
+**CLI side (what the human sees):**
+
+- `docshark stale` (alias `outdated`, `--days <n>`) lists stale libraries and,
+  on an interactive TTY, prompts `Refresh N stale libraries now? [y/N]`;
+  agreeing re-crawls all listed libraries sequentially.
+- `docshark list` runs the same check + prompt after its table.
+- `docshark search` prints a one-line stale reminder (interactive only).
+- Non-interactive runs (piped stdout/stdin, CI) never prompt — they print the
+  stale list on stderr with a hint.
+- Skips: `docshark list --no-stale-check`, `DOCSHARK_DISABLE_STALE_CHECK=1`.
+
+**Parity (AGENTS.md rule):** MCP `action=stale` ↔ CLI `docshark stale`; MCP
+staleness columns ↔ CLI stale prompt/hint — both surfaces always agree.
 
 ---
 
@@ -349,8 +416,8 @@ doc://svelte-5/transitions/fade      → Specific section
 
 ## Tool Naming Best Practices Applied
 
-| Practice                 | How DocShark follows it                     |
-| ------------------------ | ------------------------------------------- |
+| Practice                 | How DocShark follows it                      |
+| ------------------------ | -------------------------------------------- |
 | Use `snake_case`         | ✅ `search_docs`, `list_libraries`, etc.     |
 | Action-oriented verbs    | ✅ search, list, get, add, refresh, remove   |
 | Descriptive descriptions | ✅ Each tool explains when AND how to use it |

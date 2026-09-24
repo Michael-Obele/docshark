@@ -100,15 +100,19 @@ bunx docshark search "runes" --library svelte-dev
 
 # Get a specific page
 bunx docshark get svelte-dev /docs/svelte/overview
+
+# Check for docs that have not been crawled in 14+ days
+# (interactive runs prompt you to refresh them all at once)
+bunx docshark stale
 ```
 
 ## Available Tools
 
 Once connected as an MCP server, DocShark exposes these tools to your AI assistant:
 
-| Tool             | Action                                | Parameters                                                                             |
-| ---------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
-| `manage_library` | Add, rename, refresh, remove, inspect | `action`, `url`, `name`, `version`, `max_depth`, `current_name`, `new_name`, `library` |
-| `search_docs`    | Search indexed docs                   | `query`, `library`, `limit`                                                            |
-| `list_libraries` | List all indexed libraries            | `status`                                                                               |
-| `get_doc_page`   | Read a specific page                  | `url`, `library`, `path`                                                               |
+| Tool             | Action                                          | Parameters                                                                             |
+| ---------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `manage_library` | Add, rename, refresh, remove, inspect, staleness | `action`, `url`, `name`, `version`, `max_depth`, `current_name`, `new_name`, `library`, `days` |
+| `search_docs`    | Search indexed docs                             | `query`, `library`, `limit`                                                            |
+| `list_libraries` | List indexed libraries (⚠️ marks stale ones)    | `status`                                                                               |
+| `get_doc_page`   | Read a specific page                            | `url`, `library`, `path`                                                               |

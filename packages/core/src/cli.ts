@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 // src/cli.ts — DocShark CLI entry point
 import { cac } from "cac";
+import { createInterface } from "node:readline/promises";
 import { startHttpServer } from "./http.js";
 import { StdioTransport } from "@tmcp/transport-stdio";
 import { server, db, searchEngine, libraryService } from "./server.js";
@@ -9,6 +10,13 @@ import {
   formatBatchSearchResults,
   formatSearchResults,
 } from "./search/format-results.js";
+import {
+  daysSinceCrawl,
+  findStaleLibraries,
+  formatStaleLibrary,
+  getStaleDays,
+  isStaleLibrary,
+} from "./stale.js";
 import { VERSION } from "./version.js";
 
 const useColor = process.stdout.isTTY;
@@ -85,6 +93,12 @@ const helpCommands: HelpCommand[] = [
     aliases: ["r", "-r"],
     args: "<name>",
     description: "Refresh library",
+  },
+  {
+    name: "stale",
+    aliases: ["outdated"],
+    args: "[--days <n>]",
+    description: "Find stale libraries",
   },
   {
     name: "remove",
@@ -191,10 +205,12 @@ cli
 
     if (results.length === 0) {
       console.log(`\nNo results found for "${query}".\n`);
+      printStaleHint();
       return;
     }
 
     console.log(`\n${formatSearchResults(query, results)}\n`);
+    printStaleHint();
   });
 
 cli
@@ -229,6 +245,10 @@ cli
     "Filter by status (indexed, crawling, error, all)",
     { default: "all" },
   )
+  .option(
+    "--no-stale-check",
+    "Skip the prompt to refresh libraries older than the freshness window",
+  )
   .action(async (opts) => {
     await maybeNotifyForCommand("list");
 
@@ -252,6 +272,41 @@ cli
         "Last Crawled": l.last_crawled_at || "never",
       })),
     );
+
+    await maybePromptStaleRefresh({
+      disabled: opts.staleCheck === false,
+    });
+  });
+
+cli
+  .command(
+    "stale",
+    "List libraries not crawled recently (default: 14+ days) and offer to refresh them",
+  )
+  .alias("outdated")
+  .option("-d, --days <n>", "Freshness window in days")
+  .action(async (opts) => {
+    await maybeNotifyForCommand("stale");
+
+    db.init();
+
+    if (isStaleCheckDisabled()) {
+      console.log(
+        "\nStale check disabled via DOCSHARK_DISABLE_STALE_CHECK.\n",
+      );
+      return;
+    }
+
+    const days = getStaleDays(
+      opts.days !== undefined ? Number.parseInt(opts.days, 10) : undefined,
+    );
+    const count = await maybePromptStaleRefresh({ days });
+
+    if (count === 0) {
+      console.log(
+        `\n✅ All libraries were crawled within the last ${days} days.\n`,
+      );
+    }
   });
 
 cli
@@ -401,6 +456,12 @@ cli
     console.log(`Pages: ${lib.page_count}`);
     console.log(`Chunks: ${lib.chunk_count}`);
     console.log(`Last Crawled: ${lib.last_crawled_at || "never"}`);
+    if (isStaleLibrary(lib)) {
+      const age = daysSinceCrawl(lib.last_crawled_at);
+      console.log(
+        `⚠️ Stale: not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — run "docshark refresh ${lib.name}".`,
+      );
+    }
 
     const pages = db.getPagesByLibrary(lib.id);
     if (pages.length > 0) {
@@ -449,6 +510,113 @@ async function waitForCrawl(jobId: string): Promise<void> {
     };
     check();
   });
+}
+
+/** Whether the staleness feature is turned off via DOCSHARK_DISABLE_STALE_CHECK. */
+function isStaleCheckDisabled(): boolean {
+  const raw = process.env.DOCSHARK_DISABLE_STALE_CHECK?.trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes";
+}
+
+/** Prompt for a single y/n answer (interactive terminals only). */
+async function question(promptText: string): Promise<string> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  try {
+    return (await rl.question(promptText)).trim().toLowerCase();
+  } finally {
+    rl.close();
+  }
+}
+
+/**
+ * Detect libraries older than the freshness window (default 14 days), list
+ * them on stderr, and — on interactive terminals — offer to refresh them all
+ * at once. Never prompts when piped, in CI, or when disabled.
+ *
+ * @returns the number of stale libraries found.
+ */
+async function maybePromptStaleRefresh(opts: {
+  days?: number;
+  disabled?: boolean;
+}): Promise<number> {
+  if (opts.disabled || isStaleCheckDisabled()) {
+    return 0;
+  }
+
+  const days = getStaleDays(opts.days);
+  const stale = findStaleLibraries(db, days);
+  if (stale.length === 0) {
+    return 0;
+  }
+
+  const plural = stale.length === 1 ? "library has" : "libraries have";
+  console.error(`\n⚠️  ${stale.length} ${plural} not been crawled in ${days}+ days:`);
+  for (const lib of stale) {
+    console.error(`   • ${formatStaleLibrary(lib)}`);
+  }
+
+  const interactive =
+    process.stdout.isTTY && process.stdin.isTTY && !process.env.CI;
+
+  if (!interactive) {
+    console.error(
+      `\n   Run "docshark stale" in a terminal to be prompted, or refresh now with "docshark refresh <name>".\n`,
+    );
+    return stale.length;
+  }
+
+  const answer = await question(
+    `   Refresh ${stale.length} stale ${stale.length === 1 ? "library" : "libraries"} now? [y/N] `,
+  );
+  if (answer !== "y" && answer !== "yes") {
+    console.error(
+      `   Skipped. Refresh later with "docshark refresh <name>".\n`,
+    );
+    return stale.length;
+  }
+
+  const { jobManager } = await import("./server.js");
+  let refreshed = 0;
+  for (const [index, lib] of stale.entries()) {
+    if (jobManager.isRunning(lib.id)) {
+      console.error(
+        `\n⏭️  ${lib.display_name} is already being crawled — skipping.`,
+      );
+      continue;
+    }
+    const job = jobManager.startCrawl(lib.id, { incremental: true });
+    refreshed += 1;
+    console.error(
+      `\n🔄 Refreshing ${lib.display_name} (${index + 1}/${stale.length}) — job ${job.id}`,
+    );
+    await waitForCrawl(job.id);
+  }
+
+  console.error(
+    `\n✅ Refreshed ${refreshed} ${refreshed === 1 ? "library" : "libraries"}.\n`,
+  );
+  return stale.length;
+}
+
+/** One-line reminder on interactive runs that some libraries are outside the freshness window. */
+function printStaleHint(): void {
+  if (!process.stdout.isTTY || isStaleCheckDisabled()) {
+    return;
+  }
+  const stale = findStaleLibraries(db);
+  if (stale.length === 0) {
+    return;
+  }
+  const names = stale.map((lib) => lib.name).join(", ");
+  console.error(
+    paint(
+      `⚠️  ${stale.length} ${stale.length === 1 ? "library is" : "libraries are"} older than ${getStaleDays()} days: ${names} — run "docshark stale" to review and refresh.\n`,
+      color.yellow,
+    ),
+  );
 }
 
 async function maybeNotifyForCommand(

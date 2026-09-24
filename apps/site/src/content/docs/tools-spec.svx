@@ -75,7 +75,8 @@ Svelte provides several built-in transition functions:
 
 ## list_libraries
 
-Discovery tool. Shows what documentation is currently indexed.
+Discovery tool. Shows what documentation is currently indexed, how old each
+index is, and which libraries are **stale** (not crawled in 14+ days).
 
 | Parameter | Type   | Required | Description                                      |
 | --------- | ------ | -------- | ------------------------------------------------ |
@@ -84,13 +85,20 @@ Discovery tool. Shows what documentation is currently indexed.
 **Example output:**
 
 ```
-## Indexed Libraries (4 total)
+## Libraries (1-4 of 4)
 
-| Library     | URL                         | Pages | Chunks | Status  |
-| ----------- | --------------------------- | ----- | ------ | ------- |
-| svelte-5    | https://svelte.dev/docs     | 47    | 312    | indexed |
-| tailwind-v4 | https://tailwindcss.com/docs| 89    | 654    | indexed |
+| Library     | URL                          | Pages | Chunks | Status  | Last Crawled        | Age    |
+| ----------- | ---------------------------- | ----- | ------ | ------- | ------------------- | ------ |
+| svelte-5    | https://svelte.dev/docs      | 47    | 312    | indexed | 2026-09-23 10:00:00 | 1d     |
+| tailwind-v4 | https://tailwindcss.com/docs | 89    | 654    | indexed | 2026-09-01 09:00:00 | 23d ⚠️ |
+
+⚠️ **1 library has not been crawled in 14+ days.** Tell the user which
+libraries are stale and offer to refresh them (manage_library action=refresh).
 ```
+
+The `Age` column marks stale libraries with ⚠️, and the footer tells the
+assistant to surface that to the user. Use `manage_library action=stale` for a
+dedicated staleness report.
 
 ## get_doc_page
 
@@ -106,23 +114,31 @@ Deep read. Retrieve full markdown content of a specific documentation page.
 
 Manage an existing documentation library or add a new one.
 
-| Action    | Purpose                                         |
-| --------- | ----------------------------------------------- |
-| `add`     | Crawl and index a new documentation website     |
-| `rename`  | Change the stored and display name of a library |
-| `refresh` | Re-crawl an existing library for updates        |
-| `remove`  | Delete a library and all indexed content        |
-| `info`    | Inspect stats and indexed pages for a library   |
+| Action    | Purpose                                                              |
+| --------- | -------------------------------------------------------------------- |
+| `add`     | Crawl and index a new documentation website                          |
+| `rename`  | Change the stored and display name of a library                      |
+| `refresh` | Re-crawl an existing library for updates                             |
+| `remove`  | Delete a library and all indexed content                             |
+| `info`    | Inspect stats and indexed pages for a library                        |
+| `stale`   | List libraries not crawled in the freshness window (default 14 days) |
 
-| Parameter      | Type   | Required | Description                                         |
-| -------------- | ------ | -------- | --------------------------------------------------- |
-| `action`       | string | Yes      | One of `add`, `rename`, `refresh`, `remove`, `info` |
-| `url`          | string | No       | Base URL of the docs site for `add`                 |
-| `name`         | string | No       | Short identifier for `add`                          |
-| `version`      | string | No       | Version string for `add`                            |
-| `max_depth`    | number | No       | Max crawl depth for `add`                           |
-| `current_name` | string | No       | Existing library name for `rename`                  |
-| `new_name`     | string | No       | Replacement library name for `rename`               |
-| `library`      | string | No       | Library name for `refresh`, `remove`, or `info`     |
+| Parameter      | Type   | Required | Description                                                                 |
+| -------------- | ------ | -------- | --------------------------------------------------------------------------- |
+| `action`       | string | Yes      | One of `add`, `rename`, `refresh`, `remove`, `info`, `stale`                |
+| `url`          | string | No       | Base URL of the docs site for `add`                                         |
+| `name`         | string | No       | Short identifier for `add`                                                  |
+| `version`      | string | No       | Version string for `add`                                                    |
+| `max_depth`    | number | No       | Max crawl depth for `add`                                                   |
+| `current_name` | string | No       | Existing library name for `rename`                                          |
+| `new_name`     | string | No       | Replacement library name for `rename`                                       |
+| `library`      | string | No       | Library name for `refresh`, `remove`, or `info`                             |
+| `days`         | number | No       | Freshness window in days for `stale` (default 14, or `DOCSHARK_STALE_DAYS`) |
 
-Use `action=add` to create a new library, `action=rename` to retitle an existing one, `action=refresh` to re-crawl, `action=remove` to delete a library, and `action=info` to inspect its pages and stats.
+Use `action=add` to create a new library, `action=rename` to retitle an existing one, `action=refresh` to re-crawl, `action=remove` to delete a library, `action=info` to inspect its pages and stats, and `action=stale` to find outdated libraries.
+
+**Staleness workflow for assistants:** run `action=stale` (or read the ⚠️ marks
+from `list_libraries`), tell the user which libraries are stale and how old
+they are, ask whether to refresh them — and only call `action=refresh` (one
+call per library) after the user agrees. Humans get the same flow in the CLI
+via `docshark stale` and the auto-prompt on `docshark list`.

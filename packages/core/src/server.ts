@@ -13,6 +13,12 @@ import { LibraryService } from "./services/library.js";
 import { JobManager } from "./jobs/manager.js";
 import { VERSION } from "./version.js";
 import { EventBus } from "./jobs/events.js";
+import {
+  daysSinceCrawl,
+  findStaleLibraries,
+  getStaleDays,
+  isStaleLibrary,
+} from "./stale.js";
 
 // Initialize core services
 export const db = new Database();
@@ -144,7 +150,12 @@ function formatLibraryInfo(libraryId: string): string {
   output += `- **Status:** ${lib.status}\n`;
   output += `- **Pages:** ${lib.page_count}\n`;
   output += `- **Chunks:** ${lib.chunk_count}\n`;
-  output += `- **Last Crawled:** ${lib.last_crawled_at || "never"}\n\n`;
+  output += `- **Last Crawled:** ${lib.last_crawled_at || "never"}\n`;
+  if (isStaleLibrary(lib)) {
+    const age = daysSinceCrawl(lib.last_crawled_at);
+    output += `- **Stale:** ⚠️ not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — tell the user and offer a refresh\n`;
+  }
+  output += `\n`;
 
   if (pages.length > 0) {
     output += `### Pages (${pages.length})\n\n`;
@@ -167,7 +178,8 @@ function formatLibraryInfo(libraryId: string): string {
 server.tool(
   {
     name: "list_libraries",
-    description: "List indexed documentation libraries. Paginated results.",
+    description:
+      "List indexed documentation libraries. Paginated results. Includes Last Crawled/Age and marks libraries older than the freshness window (default 14 days) with ⚠️ so you can warn the user about stale docs.",
     annotations: {
       readOnlyHint: true,
       idempotentHint: true,
@@ -201,17 +213,29 @@ server.tool(
       const end = start + limit;
       const paginated = libraries.slice(start, end);
       const hasMore = end < libraries.length;
+      const staleDays = getStaleDays();
+      const staleNames = new Set(
+        findStaleLibraries(db, staleDays).map((lib) => lib.name),
+      );
 
       // Minified response (no pretty-printing)
       let output = `## Libraries (${start + 1}-${Math.min(end, libraries.length)} of ${libraries.length})\n\n`;
-      output += "| Library | URL | Pages | Chunks | Status |\n";
-      output += "| ------- | --- | ----- | ------ | ------ |\n";
+      output += "| Library | URL | Pages | Chunks | Status | Last Crawled | Age |\n";
+      output += "| ------- | --- | ----- | ------ | ------ | ------------ | --- |\n";
       for (const lib of paginated) {
-        output += `|${lib.name}|${lib.url}|${lib.page_count}|${lib.chunk_count}|${lib.status}|\n`;
+        const ageDays = daysSinceCrawl(lib.last_crawled_at);
+        const age = ageDays === null ? "never" : `${ageDays}d`;
+        const staleMark = staleNames.has(lib.name) ? " ⚠️" : "";
+        output += `|${lib.name}|${lib.url}|${lib.page_count}|${lib.chunk_count}|${lib.status}|${lib.last_crawled_at || "never"}|${age}${staleMark}|\n`;
       }
 
       if (hasMore) {
         output += `\n**More available.** Use page=${page + 1} to fetch next page.`;
+      }
+
+      const staleCount = staleNames.size;
+      if (staleCount > 0) {
+        output += `\n\n⚠️ **${staleCount} ${staleCount === 1 ? "library has" : "libraries have"} not been crawled in ${staleDays}+ days.** Tell the user which libraries are stale and offer to refresh them (manage_library action=refresh, one call per library). Use manage_library action=stale for details.`;
       }
 
       return tool.text(output);
@@ -274,13 +298,13 @@ server.tool(
   {
     name: "manage_library",
     description:
-      "Manage library lifecycle: add/rename/refresh/remove/info. Destructive actions require confirmation.",
+      "Manage library lifecycle: add/rename/refresh/remove/info/stale. `stale` lists libraries not crawled within the freshness window (default 14 days) so you can tell the user and offer a refresh. Destructive actions require confirmation.",
     annotations: {
       destructiveHint: true,
     },
     schema: v.object({
       action: v.pipe(
-        v.picklist(["add", "rename", "refresh", "remove", "info"]),
+        v.picklist(["add", "rename", "refresh", "remove", "info", "stale"]),
         v.description("The management action to perform."),
       ),
       url: v.optional(
@@ -312,6 +336,17 @@ server.tool(
       ),
       library: v.optional(
         v.pipe(v.string(), v.description("The library name to manage.")),
+      ),
+      days: v.optional(
+        v.pipe(
+          v.number(),
+          v.integer(),
+          v.minValue(1),
+          v.maxValue(365),
+          v.description(
+            "Freshness window in days for action=stale. Default: 14 (or DOCSHARK_STALE_DAYS).",
+          ),
+        ),
       ),
     }),
   },
@@ -391,6 +426,27 @@ server.tool(
             );
 
           return tool.text(formatLibraryInfo(lib.id));
+        }
+        case "stale": {
+          const staleDays = getStaleDays(input.days);
+          const stale = findStaleLibraries(db, input.days);
+
+          if (stale.length === 0) {
+            return tool.text(
+              `✅ No stale libraries — every library was crawled within the last ${staleDays} days.`,
+            );
+          }
+
+          let output = `## Stale libraries (not crawled in ${staleDays}+ days)\n\n`;
+          output += "| Library | URL | Last Crawled | Age |\n";
+          output += "| ------- | --- | ------------ | --- |\n";
+          for (const lib of stale) {
+            const age =
+              lib.days_since_crawl === null ? "never" : `${lib.days_since_crawl}d`;
+            output += `|${lib.name}|${lib.url}|${lib.last_crawled_at || "never"}|${age}|\n`;
+          }
+          output += `\n**Tell the user which libraries are stale and how old they are, then ask whether to refresh them.** Only after the user agrees, call manage_library with action=refresh for each library above (one call per library).`;
+          return tool.text(output);
         }
       }
     } catch (err: unknown) {

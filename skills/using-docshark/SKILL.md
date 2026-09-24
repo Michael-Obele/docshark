@@ -49,12 +49,34 @@ HTTP endpoints:
 - `docshark list`
 - `docshark search <query>`
 - `docshark refresh <name>`
+- `docshark stale [--days <n>]` (alias: `outdated`) — list libraries older than the freshness window
 - `docshark rename <current-name> <new-name>`
 - `docshark remove <name>`
 - `docshark get [url] --library <name> --path <path>`
 
+## Stale-Docs Auto-Prompt
+
+- A library is **stale** after **14 days** without a crawl. Tune with
+  `DOCSHARK_STALE_DAYS=<n>`, `docshark stale --days <n>`, or the `--days` flag
+  (clamped to 1–365).
+- `docshark list` and `docshark stale` on an interactive TTY print every stale
+  library with its last crawl date and age, then ask
+  `Refresh N stale libraries now? [y/N]`. Answering `y` re-crawls all listed
+  libraries sequentially.
+- Non-interactive runs (pipes, CI) never prompt: they print the stale list on
+  stderr with a hint instead.
+- `docshark search` prints a one-line stale reminder (interactive only).
+- Skips: `docshark list --no-stale-check`, or `DOCSHARK_DISABLE_STALE_CHECK=1`.
+- AI parity: the same signal is exposed over MCP via the Age/⚠️ columns of
+  `list_libraries` and `manage_library action=stale`, so an assistant can tell
+  the user which docs are outdated and refresh them after agreement.
+
 ## Troubleshooting
 
+- Docs seem outdated / answers look wrong:
+  1. Run `docshark stale` (or answer the prompt that `docshark list` shows).
+  2. Refresh the listed libraries: `docshark refresh <name>`.
+  3. Re-run the search.
 - No search results:
   1. Verify with `docshark list`.
   2. Refresh with `docshark refresh <library>`.
