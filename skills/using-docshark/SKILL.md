@@ -50,6 +50,7 @@ HTTP endpoints:
 - `docshark search <query>`
 - `docshark refresh <name>`
 - `docshark stale [--days <n>]` (alias: `outdated`) — list libraries older than the freshness window
+- `docshark icons [style]` (alias: `icon`) — show or set the CLI icon style
 - `docshark rename <current-name> <new-name>`
 - `docshark remove <name>`
 - `docshark get [url] --library <name> --path <path>`
@@ -73,12 +74,29 @@ HTTP endpoints:
 
 ## Icon Styles
 
-- `DOCSHARK_ICONS=emoji|nerd|plain|none` (default `emoji`) controls CLI icon rendering.
+- `docshark icons [style]` shows or sets the icon style; sets persist to
+  `<data dir>/config.json`. Valid styles: `emoji | nerd | plain | none`.
+- Precedence: `--icons <style>` / `-I` flag (per run) → `DOCSHARK_ICONS` env →
+  config file → default **`plain`**.
+- Default `plain` = common-monospace Unicode (`✓ ✗ ⚠ ↻ …`); any icon a style
+  lacks (e.g. the shark) falls back to the **emoji** automatically.
 - `nerd` = crisp monochrome glyphs from Nerd Fonts (Material Design Icons set);
   requires a Nerd Font-patched terminal font — otherwise glyphs show as boxes.
-- `plain` = common-monospace Unicode (`✓ ✗ ⚠ ↻ …`); `none` = text only (good for logs).
-- Unknown values fall back to `emoji`. MCP tool output is always emoji, since AI
-  chat clients render those reliably — the env var only affects terminal output.
+- `none` = text only (good for logs). Invalid values warn once and fall through
+  to the next source.
+- MCP tool output is always emoji, since AI chat clients render those reliably —
+  these settings only affect terminal output.
+
+## Responsive Output
+
+- All CLI output auto-fits the terminal width: tables shrink flexible columns
+  (with `…` ellipses) instead of wrapping, help re-flows to a dynamic label
+  column, long messages wrap at word boundaries. Width is read per command from
+  `stdout.columns` — a resized terminal gets a correct layout on the next run.
+- `DOCSHARK_WIDTH=<20–500>` forces a fixed width (scripts/CI default: 80).
+- Non-TTY (pipes, CI): piped `search`/`get` output stays raw Markdown so it can
+  be parsed unchanged; tables still lay out at the fixed width.
+- MCP tool output is never width-wrapped — chat clients re-render it themselves.
 
 ## Troubleshooting
 

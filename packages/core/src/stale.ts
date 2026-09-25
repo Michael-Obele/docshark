@@ -48,11 +48,11 @@ export function findStaleLibraries(
   }));
 }
 
-/** One-line description of a stale library, e.g. `svelte-5 — last crawled 2026-09-01 10:00:00 (16d ago)`. */
+/** One-line description of a stale library, e.g. `svelte-5 (16d ago) — last crawled 2026-09-01 10:00:00`. Age comes first so narrow-terminal truncation drops only the date. */
 export function formatStaleLibrary(lib: StaleLibrary): string {
   const age =
     lib.days_since_crawl === null
       ? "never crawled"
       : `${lib.days_since_crawl}d ago`;
-  return `${lib.name} — last crawled ${lib.last_crawled_at || "never"} (${age})`;
+  return `${lib.name} (${age}) — last crawled ${lib.last_crawled_at || "never"}`;
 }

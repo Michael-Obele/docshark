@@ -4,5 +4,6 @@ export * from "./version.js";
 export * from "./http.js";
 export * from "./stale.js";
 export * from "./icons.js";
+export * from "./ui.js";
 export * from "./tools/search-docs.js";
 export * from "./tools/search-docs-batch.js";

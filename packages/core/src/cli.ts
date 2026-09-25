@@ -2,6 +2,7 @@
 // src/cli.ts — DocShark CLI entry point
 import { cac } from "cac";
 import { createInterface } from "node:readline/promises";
+import * as v from "valibot";
 import { startHttpServer } from "./http.js";
 import { StdioTransport } from "@tmcp/transport-stdio";
 import { server, db, searchEngine, libraryService } from "./server.js";
@@ -17,7 +18,23 @@ import {
   getStaleDays,
   isStaleLibrary,
 } from "./stale.js";
-import { icon } from "./icons.js";
+import {
+  DEFAULT_ICON_STYLE,
+  ICON_STYLE_VALUES,
+  getIconStyle,
+  icon,
+  iconConfigPath,
+  readIconStyleFromConfig,
+  writeIconStyle,
+} from "./icons.js";
+import {
+  displayWidth,
+  fitMarkdown,
+  renderTable,
+  terminalWidth,
+  truncate,
+  wrap,
+} from "./ui.js";
 import { VERSION } from "./version.js";
 
 const useColor = process.stdout.isTTY;
@@ -32,6 +49,12 @@ const color = {
 };
 
 const cli = cac("docshark");
+
+// Global flag: --icons <style> applies to this run only (applied in applyIconsFlag).
+cli.option(
+  "-I, --icons <style>",
+  "Icon style for this run (emoji | nerd | plain | none)",
+);
 
 cli
   .command("", "Start the MCP server")
@@ -97,7 +120,7 @@ const helpCommands: HelpCommand[] = [
   },
   {
     name: "stale",
-    aliases: ["outdated"],
+    aliases: ["outdated", "st", "-st", "-o"],
     args: "[--days <n>]",
     description: "Find stale libraries",
   },
@@ -125,6 +148,24 @@ const helpCommands: HelpCommand[] = [
     args: "<name>",
     description: "Library info + pages",
   },
+  {
+    name: "icons",
+    aliases: ["icon", "ic", "-ic"],
+    args: "[style]",
+    description: "Show/set icon style",
+  },
+  {
+    name: "search-batch",
+    aliases: ["batch", "sb", "-sb"],
+    args: "[...queries]",
+    description: "Search multiple queries",
+  },
+  {
+    name: "rename",
+    aliases: ["mv", "-mv"],
+    args: "<current-name> <new-name>",
+    description: "Rename library",
+  },
 ];
 
 cli
@@ -148,7 +189,11 @@ cli
         maxDepth: parseInt(opts.depth),
       });
       console.log(
-        `\n${icon("check")}Added "${lib.display_name}" — crawling ${lib.url}...`,
+        `\n${wrap(
+          `${icon("check")}Added "${lib.display_name}" — crawling ${lib.url}...`,
+          terminalWidth(),
+          "  ",
+        )}`,
       );
       console.log(`   Job ID: ${lib.jobId}`);
       console.log(`   Use "docshark list" to check progress.\n`);
@@ -212,12 +257,14 @@ cli
       return;
     }
 
-    console.log(`\n${formatSearchResults(query, results)}\n`);
+    console.log(`\n${fitIfTty(formatSearchResults(query, results))}\n`);
     printStaleHint();
   });
 
 cli
   .command("search-batch [...queries]", "Search multiple documentation queries")
+  .alias("batch")
+  .alias("sb")
   .option("-l, --library <name>", "Filter all queries by library")
   .option("-m, --limit <n>", "Max results per query", { default: "5" })
   .action(async (queries, opts) => {
@@ -237,7 +284,7 @@ cli
       })),
     );
 
-    console.log(`\n${formatBatchSearchResults(results)}\n`);
+    console.log(`\n${fitIfTty(formatBatchSearchResults(results))}\n`);
   });
 
 cli
@@ -265,15 +312,25 @@ cli
       return;
     }
 
-    console.table(
-      libs.map((l) => ({
-        Name: l.name,
-        URL: l.url,
-        Pages: l.page_count,
-        Chunks: l.chunk_count,
-        Status: l.status,
-        "Last Crawled": l.last_crawled_at || "never",
-      })),
+    console.log(
+      renderTable(
+        [
+          { header: "Name" },
+          { header: "URL" },
+          { header: "Pages", flex: false },
+          { header: "Chunks", flex: false },
+          { header: "Status", flex: false },
+          { header: "Last Crawled", flex: false },
+        ],
+        libs.map((l) => [
+          l.name,
+          l.url,
+          String(l.page_count),
+          String(l.chunk_count),
+          l.status,
+          l.last_crawled_at || "never",
+        ]),
+      ),
     );
 
     await maybePromptStaleRefresh({
@@ -287,6 +344,7 @@ cli
     "List libraries not crawled recently (default: 14+ days) and offer to refresh them",
   )
   .alias("outdated")
+  .alias("st")
   .option("-d, --days <n>", "Freshness window in days")
   .action(async (opts) => {
     await maybeNotifyForCommand("stale");
@@ -324,7 +382,11 @@ cli
       const job = jobManager.startCrawl(lib.id, { incremental: true });
 
       console.log(
-        `\n${icon("refresh")}Refreshing "${lib.display_name}" — crawling ${lib.url}...`,
+        `\n${wrap(
+          `${icon("refresh")}Refreshing "${lib.display_name}" — crawling ${lib.url}...`,
+          terminalWidth(),
+          "  ",
+        )}`,
       );
       console.log(`   Job ID: ${job.id}`);
       await waitForCrawl(job.id);
@@ -346,7 +408,11 @@ cli
       if (!lib) throw new Error(`Library "${name}" not found.`);
       db.removeLibrary(lib.id);
       console.log(
-        `\n${icon("trash")}Removed library "${lib.display_name}". Deleted ${lib.page_count} pages.\n`,
+        `\n${wrap(
+          `${icon("trash")}Removed library "${lib.display_name}". Deleted ${lib.page_count} pages.`,
+          terminalWidth(),
+          "  ",
+        )}\n`,
       );
     } catch (err: any) {
       console.error(`\n${icon("cross")}${err.message}\n`);
@@ -377,9 +443,9 @@ cli
       console.error(`\n${icon("cross")}Page not found in index.\n`);
       process.exit(1);
     }
-    console.log(`\n--- ${page.title} ---`);
-    console.log(`Source: ${page.url}\n\n`);
-    console.log(page.content_markdown);
+    console.log(wrap(`\n--- ${page.title} ---`, terminalWidth(), "  "));
+    console.log(`${wrap(`Source: ${page.url}`, terminalWidth(), "  ")}\n`);
+    console.log(fitIfTty(page.content_markdown ?? ""));
     console.log("\n");
   });
 
@@ -403,6 +469,51 @@ cli
     });
   });
 
+cli
+  .command(
+    "icons [style]",
+    "Show or set the CLI icon style (emoji | nerd | plain | none)",
+  )
+  .alias("icon")
+  .alias("ic")
+  .action(async (style?: string) => {
+    await maybeNotifyForCommand("icons");
+
+    db.init();
+    if (style === undefined) {
+      const source = process.env.DOCSHARK_ICONS
+        ? "DOCSHARK_ICONS env"
+        : readIconStyleFromConfig() !== null
+          ? `config ${iconConfigPath()}`
+          : "built-in default";
+      console.log(`\nIcon style: ${getIconStyle()} (${source})`);
+      console.log(`Valid styles: ${ICON_STYLE_VALUES.join(" | ")}`);
+      console.log(
+        `Precedence: --icons > DOCSHARK_ICONS > config file > ${DEFAULT_ICON_STYLE}\n`,
+      );
+      return;
+    }
+
+    const parsed = v.safeParse(
+      v.picklist([...ICON_STYLE_VALUES]),
+      style.toLowerCase(),
+    );
+    if (!parsed.success) {
+      console.error(
+        `\n❌ Invalid icon style "${style}". Valid: ${ICON_STYLE_VALUES.join(" | ")}\n`,
+      );
+      process.exit(1);
+    }
+
+    writeIconStyle(parsed.output);
+    console.log(
+      `\n${icon("check")}Icon style set to "${parsed.output}" — saved to ${iconConfigPath()}`,
+    );
+    console.log(
+      `   DOCSHARK_ICONS env and the --icons flag still override it.\n`,
+    );
+  });
+
 // Intercept manual short flags (e.g., -l instead of l) so they act as command aliases
 const args = process.argv.slice(2);
 const cmdAliases: Record<string, string> = {
@@ -415,11 +526,26 @@ const cmdAliases: Record<string, string> = {
   "-g": "get",
   "-i": "info",
   "-u": "update",
+  "-st": "stale",
+  "-o": "stale",
+  "-ic": "icons",
+  "-sb": "search-batch",
+  "-mv": "rename",
+  st: "stale",
+  outdated: "stale",
+  ic: "icons",
+  icon: "icons",
+  sb: "search-batch",
+  batch: "search-batch",
+  mv: "rename",
 };
 const normalizedArgs = [...args];
 if (normalizedArgs[0] && cmdAliases[normalizedArgs[0]]) {
   normalizedArgs[0] = cmdAliases[normalizedArgs[0]];
 }
+
+// Apply --icons/-I before anything prints (help, version, commands).
+applyIconsFlag(args);
 
 const helpRequest = getHelpRequest(normalizedArgs);
 if (helpRequest === "root") {
@@ -451,28 +577,38 @@ cli
       console.error(`\n${icon("cross")}Library not found: ${name}\n`);
       process.exit(1);
     }
-    console.log(`\n--- Library: ${lib.display_name} (${lib.name}) ---`);
-    console.log(`URL: ${lib.url}`);
+    console.log(
+      wrap(
+        `\n--- Library: ${lib.display_name} (${lib.name}) ---`,
+        terminalWidth(),
+        "  ",
+      ),
+    );
+    console.log(wrap(`URL: ${lib.url}`, terminalWidth(), "  "));
     console.log(`Status: ${lib.status}`);
     console.log(`Pages: ${lib.page_count}`);
     console.log(`Chunks: ${lib.chunk_count}`);
     console.log(`Last Crawled: ${lib.last_crawled_at || "never"}`);
     if (isStaleLibrary(lib)) {
       const age = daysSinceCrawl(lib.last_crawled_at);
+      const warnPrefix = icon("warn");
       console.log(
-        `${icon("warn")}Stale: not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — run "docshark refresh ${lib.name}".`,
+        `${warnPrefix}${wrap(
+          `Stale: not crawled in ${getStaleDays()}+ days${age !== null ? ` (${age}d ago)` : ""} — run "docshark refresh ${lib.name}".`,
+          terminalWidth() - displayWidth(warnPrefix),
+          " ".repeat(displayWidth(warnPrefix)),
+        )}`,
       );
     }
 
     const pages = db.getPagesByLibrary(lib.id);
     if (pages.length > 0) {
       console.log(`\n--- Pages (${pages.length}) ---`);
-      console.table(
-        pages.map((p) => ({
-          Title: p.title || "Untitled",
-          Path: p.path,
-          URL: p.url,
-        })),
+      console.log(
+        renderTable(
+          [{ header: "Title" }, { header: "Path" }, { header: "URL" }],
+          pages.map((p) => [p.title || "Untitled", p.path, p.url]),
+        ),
       );
     } else {
       console.log(`\nNo pages found for this library.\n`);
@@ -496,7 +632,11 @@ async function waitForCrawl(jobId: string): Promise<void> {
       if (!job || job.status === "completed" || job.status === "failed") {
         if (job?.status === "completed") {
           console.log(
-            `\n${icon("shark")}Crawl complete: ${job.pages_crawled} pages, ${job.chunks_created} chunks indexed.`,
+            `\n${wrap(
+              `${icon("shark")}Crawl complete: ${job.pages_crawled} pages, ${job.chunks_created} chunks indexed.`,
+              terminalWidth(),
+              "  ",
+            )}`,
           );
           if (job.pages_failed > 0) {
             console.log(`   ${icon("warn")}${job.pages_failed} pages failed.`);
@@ -517,6 +657,35 @@ async function waitForCrawl(jobId: string): Promise<void> {
 function isStaleCheckDisabled(): boolean {
   const raw = process.env.DOCSHARK_DISABLE_STALE_CHECK?.trim().toLowerCase();
   return raw === "1" || raw === "true" || raw === "yes";
+}
+
+/** Apply a per-run `--icons <style>` / `-I <style>` flag (highest precedence). */
+function applyIconsFlag(argv: string[]): void {
+  const index = argv.findIndex((arg) => arg === "--icons" || arg === "-I");
+  const inline = argv.find((arg) => arg.startsWith("--icons="));
+  const raw =
+    index !== -1
+      ? argv[index + 1]
+      : inline !== undefined
+        ? inline.slice("--icons=".length)
+        : undefined;
+  if (raw === undefined) return;
+  const parsed = v.safeParse(
+    v.picklist([...ICON_STYLE_VALUES]),
+    raw.toLowerCase(),
+  );
+  if (!parsed.success) {
+    console.error(
+      `\n❌ Invalid --icons value "${raw}". Valid: ${ICON_STYLE_VALUES.join(" | ")}\n`,
+    );
+    process.exit(1);
+  }
+  process.env.DOCSHARK_ICONS = parsed.output;
+}
+
+/** Fit markdown-ish output to the terminal width; pipes get the raw text. */
+function fitIfTty(text: string): string {
+  return process.stdout.isTTY ? fitMarkdown(text, terminalWidth()) : text;
 }
 
 /** Prompt for a single y/n answer (interactive terminals only). */
@@ -554,11 +723,16 @@ async function maybePromptStaleRefresh(opts: {
   }
 
   const plural = stale.length === 1 ? "library has" : "libraries have";
+  const warnPrefix = icon("warn");
   console.error(
-    `\n${icon("warn")}${stale.length} ${plural} not been crawled in ${days}+ days:`,
+    `\n${wrap(
+      `${warnPrefix}${stale.length} ${plural} not been crawled in ${days}+ days:`,
+      terminalWidth(),
+      "  ",
+    )}`,
   );
   for (const lib of stale) {
-    console.error(`   • ${formatStaleLibrary(lib)}`);
+    console.error(truncate(`   • ${formatStaleLibrary(lib)}`, terminalWidth()));
   }
 
   const interactive =
@@ -566,7 +740,11 @@ async function maybePromptStaleRefresh(opts: {
 
   if (!interactive) {
     console.error(
-      `\n   Run "docshark stale" in a terminal to be prompted, or refresh now with "docshark refresh <name>".\n`,
+      `\n${wrap(
+        `   Run "docshark stale" in a terminal to be prompted, or refresh now with "docshark refresh <name>".`,
+        terminalWidth(),
+        "   ",
+      )}\n`,
     );
     return stale.length;
   }
@@ -576,7 +754,11 @@ async function maybePromptStaleRefresh(opts: {
   );
   if (answer !== "y" && answer !== "yes") {
     console.error(
-      `   Skipped. Refresh later with "docshark refresh <name>".\n`,
+      `${wrap(
+        `   Skipped. Refresh later with "docshark refresh <name>".`,
+        terminalWidth(),
+        "   ",
+      )}\n`,
     );
     return stale.length;
   }
@@ -614,11 +796,9 @@ function printStaleHint(): void {
     return;
   }
   const names = stale.map((lib) => lib.name).join(", ");
+  const message = `${icon("warn")}${stale.length} ${stale.length === 1 ? "library is" : "libraries are"} older than ${getStaleDays()} days: ${names} — run "docshark stale" to review and refresh.`;
   console.error(
-    paint(
-      `${icon("warn")}${stale.length} ${stale.length === 1 ? "library is" : "libraries are"} older than ${getStaleDays()} days: ${names} — run "docshark stale" to review and refresh.\n`,
-      color.yellow,
-    ),
+    paint(`${wrap(message, terminalWidth(), "  ")}\n`, color.yellow),
   );
 }
 
@@ -667,12 +847,20 @@ function printRootHelp(): void {
   console.log(`  docshark [options] [command]\n`);
 
   console.log(`${paint("OPTIONS", color.gray)}`);
-  console.log(
-    `  ${paint("-v, --version", color.cyan).padEnd(18)} Show version`,
+  const optionFlagWidth = Math.min(
+    22,
+    Math.max(12, Math.floor(terminalWidth() * 0.5)),
   );
-  console.log(
-    `  ${paint("-h, --help", color.cyan).padEnd(18)} Show this help\n`,
-  );
+  for (const [flag, description] of [
+    ["-v, --version", "Show version"],
+    ["-h, --help", "Show this help"],
+    ["-I, --icons <style>", "Icon style for this run"],
+  ] as const) {
+    console.log(
+      `  ${paint(truncate(flag, optionFlagWidth).padEnd(optionFlagWidth), color.cyan)} ${truncate(description, Math.max(1, terminalWidth() - optionFlagWidth - 4))}`,
+    );
+  }
+  console.log();
 
   console.log(`${paint("COMMANDS", color.gray)}`);
   const rows = helpCommands.map((command) => ({
@@ -685,21 +873,91 @@ function printRootHelp(): void {
     description: command.description,
   }));
 
-  const primaryWidth = Math.max(...rows.map((row) => row.primary.length));
-  const argsWidth = Math.max(...rows.map((row) => row.args.length));
+  const labelWidth = Math.max(
+    ...rows.map(
+      (row) => row.primary.length + (row.args ? 1 + row.args.length : 0),
+    ),
+  );
+  const width = terminalWidth();
 
   for (const row of rows) {
-    const aliasSuffix =
+    // Args hug the command name ("search, f <query>"); the gutter goes before
+    // the description, never between a command and its own arguments.
+    const minimalLabel = `${row.primary}${row.args ? ` ${row.args}` : ""}`;
+    const paddedLabel = minimalLabel.padEnd(labelWidth);
+    const aliasText =
       row.shortAliases.length > 0
-        ? `  [aliases: ${row.shortAliases.join(", ")}]`
+        ? `[aliases: ${row.shortAliases.join(", ")}]`
         : "";
-    const label =
-      `${row.primary.padEnd(primaryWidth)}${row.args ? ` ${row.args.padEnd(argsWidth)}` : `${"".padEnd(argsWidth + 1)}`}${aliasSuffix}`.trimEnd();
-    console.log(`  ${paint(label.padEnd(36), color.cyan)} ${row.description}`);
+    const desc = row.description;
+
+    const tryOneLine = (label: string): boolean => {
+      const lw = displayWidth(label);
+      const aw = aliasText ? displayWidth(`  ${aliasText}`) : 0;
+      return 2 + lw + 2 + displayWidth(desc) + aw <= width;
+    };
+    const tryLabelDesc = (label: string): boolean =>
+      2 + displayWidth(label) + 2 + displayWidth(desc) <= width;
+
+    // 1) Padded label + desc + alias on one line (aligned, ideal)
+    if (tryOneLine(paddedLabel)) {
+      const aliasPart = aliasText ? `  ${aliasText}` : "";
+      console.log(
+        `  ${paint(paddedLabel, color.cyan)}  ${desc}${aliasPart ? paint(aliasPart, color.dim) : ""}`,
+      );
+      continue;
+    }
+    // 2) Minimal label + desc + alias on one line (saves padding space)
+    if (tryOneLine(minimalLabel)) {
+      const aliasPart = aliasText ? `  ${aliasText}` : "";
+      console.log(
+        `  ${paint(minimalLabel, color.cyan)}  ${desc}${aliasPart ? paint(aliasPart, color.dim) : ""}`,
+      );
+      continue;
+    }
+    // 3) Label + desc on one line, alias on next (never truncate alias)
+    if (tryLabelDesc(paddedLabel)) {
+      console.log(`  ${paint(paddedLabel, color.cyan)}  ${desc}`);
+      if (aliasText) {
+        console.log(
+          `  ${" ".repeat(displayWidth(paddedLabel))}  ${paint(aliasText, color.dim)}`,
+        );
+      }
+      continue;
+    }
+    if (tryLabelDesc(minimalLabel)) {
+      console.log(`  ${paint(minimalLabel, color.cyan)}  ${desc}`);
+      if (aliasText) {
+        console.log(
+          `  ${" ".repeat(displayWidth(minimalLabel))}  ${paint(aliasText, color.dim)}`,
+        );
+      }
+      continue;
+    }
+    // 4) Very narrow — stack vertically, wrap desc, alias never truncated
+    const labelForStack =
+      displayWidth(minimalLabel) + 2 <= width
+        ? minimalLabel
+        : truncate(minimalLabel, Math.max(1, width - 2));
+    console.log(`  ${paint(labelForStack, color.cyan)}`);
+    const indent = "    ";
+    const avail = Math.max(1, width - displayWidth(indent));
+    const wrapped = wrap(desc, avail);
+    for (const line of wrapped.split("\n")) {
+      console.log(`${indent}${line}`);
+    }
+    if (aliasText) {
+      const aliasAvail = Math.max(1, width - displayWidth(indent));
+      const aliasLine =
+        displayWidth(aliasText) <= aliasAvail
+          ? aliasText
+          : truncate(aliasText, aliasAvail);
+      console.log(`${indent}${paint(aliasLine, color.dim)}`);
+    }
   }
 
   console.log(
-    `\n${paint("Run `docshark help <command>` for more information.", color.dim)}`,
+    `\n${paint(wrap("Run `docshark help <command>` for more information.", terminalWidth()), color.dim)}`,
   );
 }
 
@@ -729,17 +987,23 @@ function printCommandHelp(commandName: string): void {
   console.log(`  ${command.description}\n`);
 
   console.log(
-    `${paint("Run `docshark help` to see all commands.", color.dim)}`,
+    `${paint(wrap("Run `docshark help` to see all commands.", terminalWidth()), color.dim)}`,
   );
 }
 
 function printHeader(): void {
   console.log();
+  const width = terminalWidth();
+  const brand = `${icon("shark")}DocShark`;
+  const subtitle = "Documentation MCP Server";
+  if (displayWidth(brand) + 2 + displayWidth(subtitle) <= width) {
+    console.log(`${paint(brand, color.cyan)}  ${paint(subtitle, color.bold)}`);
+  } else {
+    console.log(paint(truncate(brand, width), color.cyan));
+    console.log(paint(truncate(subtitle, width), color.bold));
+  }
   console.log(
-    `${paint(`${icon("shark")}DocShark`, color.cyan)}  ${paint("Documentation MCP Server", color.bold)}`,
-  );
-  console.log(
-    `   ${paint("Scrape • Index • Search any docs site", color.dim)}\n`,
+    `${paint(wrap("   Scrape • Index • Search any docs site", width, "   "), color.dim)}\n`,
   );
 }
 

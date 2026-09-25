@@ -92,13 +92,21 @@ Interactive `docshark list` and `docshark stale` runs also check library freshne
 
 ### Icon styles
 
-DocShark's CLI uses emoji icons by default. If your terminal uses a [Nerd Font](https://www.nerdfonts.com/), you can switch to crisp monochrome glyphs — or to plain Unicode, or no icons at all:
+DocShark's CLI defaults to **plain** icons — common-monospace Unicode (`✓ ✗ ⚠ ↻`) that renders in any terminal font; when a style lacks a glyph (the shark, for example) it falls back to the emoji automatically. Change it from the CLI:
 
 ```bash
-export DOCSHARK_ICONS=nerd   # emoji (default) | nerd | plain | none
+docshark icons               # show the effective style and where it comes from
+docshark icons nerd          # persist a style to ~/.docshark/config.json
+docshark --icons emoji list  # one-off override for a single command
 ```
 
-The `nerd` style uses Material Design Icons glyphs from Nerd Fonts; if your main font lacks them, install the Symbols Nerd Font Mono font from [nerdfonts.com/font-downloads](https://www.nerdfonts.com/font-downloads) as a fallback. MCP tool output always keeps emoji, since AI chat clients render those reliably.
+Precedence: `--icons` flag → `DOCSHARK_ICONS` env → config file → `plain`. Valid styles: `emoji | nerd | plain | none`.
+
+The `nerd` style uses Material Design Icons glyphs from Nerd Fonts; if your main font lacks them, install the Symbols Nerd Font Mono font from [nerdfonts.com/font-downloads](https://www.nerdfonts.com/font-downloads) as a fallback (or just use `plain`). MCP tool output always keeps emoji, since AI chat clients render those reliably.
+
+### Responsive output
+
+All CLI output fits your terminal width automatically: tables shrink their flexible columns (with `…` ellipses) instead of breaking, help text re-flows to a dynamic label column, and long messages wrap at word boundaries. The width is re-read from `stdout.columns` on every command, so after a resize the *next* command always lays out correctly. Force a fixed width with `DOCSHARK_WIDTH=<20–500>` (useful in scripts and CI, where the default becomes 80). Piped `search`/`get` output stays raw Markdown so scripts can consume it unchanged.
 
 For scripts, `docshark update --check` exits `0` when current, `10` when a newer version is available, and `1` when the version check could not be completed.
 
