@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.28](https://github.com/Michael-Obele/docshark/compare/v0.1.27...v0.1.28) (2026-09-25)
+
+
+### ✨ Features
+
+* **icons:** add `docshark icons` command and plain style default ([a8ed1c5](https://github.com/Michael-Obele/docshark/commit/a8ed1c5647ad3e788976edb726304f947ba8d37a))
+
 ## [0.1.27](https://github.com/Michael-Obele/docshark/compare/v0.1.26...v0.1.27) (2026-09-24)
 
 
